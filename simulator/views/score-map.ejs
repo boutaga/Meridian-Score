@@ -1,0 +1,139 @@
+<% var title = 'Score Map'; %>
+<%- include('partials/header') %>
+
+<div class="score-map-page" data-theme="opshub-dark">
+  <h1>Score Map — <%= tech.charAt(0).toUpperCase() + tech.slice(1) %></h1>
+  <p class="sm-intro">
+    How a score is built, top-down: <strong>category → sub-category → metrics → the rules that link them</strong>.
+    Click a card to drill in; the deepest level is a focused graph of one sub-category's metrics and the
+    cross-metric relations between them. Load a scenario to light up what fires.
+  </p>
+
+  <div class="map-toolbar">
+    <label>Scenario:
+      <select id="scenarioSelect" onchange="window.location.href='/score-map/<%= tech %>?scenario=' + this.value">
+        <% samples.forEach(function(s) { %>
+          <option value="<%= s %>" <%= scenario === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Workload:
+      <select id="workloadProfile" class="context-input">
+        <% workloadProfiles.forEach(function(p) { %>
+          <option value="<%= p %>" <%= workloadProfile === p ? 'selected' : '' %>><%= p %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>RAM (GB):
+      <input type="number" id="sysRamGb" class="context-input" min="0" step="0.5" style="width:5em"
+             value="<%= systemFacts.ram_kb ? (systemFacts.ram_kb / (1024 * 1024)).toFixed(2).replace(/\.00$/, '') : '' %>">
+    </label>
+    <label>CPU:
+      <input type="number" id="sysCpu" class="context-input" min="0" step="1" style="width:4em" value="<%= systemFacts.cpu_count || '' %>">
+    </label>
+    <label>Storage (GB):
+      <input type="number" id="sysStorageGb" class="context-input" min="0" step="1" style="width:5em"
+             value="<%= systemFacts.storage_size_kb ? (systemFacts.storage_size_kb / (1024 * 1024)).toFixed(0) : '' %>">
+    </label>
+    <button class="btn btn-secondary" id="mapRecalc">Recalculate</button>
+
+    <label class="sm-mode-toggle" style="margin-left:auto">
+      <input type="checkbox" id="smModeToggle"> Expert / Full graph
+    </label>
+    <span id="smExpertTools" hidden>
+      <span class="result-count" id="mapCount"></span>
+      <button class="btn btn-secondary" id="mapFit">Fit</button>
+      <button class="btn btn-secondary" id="mapReset">Reset view</button>
+      <button class="btn btn-secondary" id="mapExportPng">Export PNG</button>
+      <button class="btn btn-primary" id="mapExportHtml">Export HTML</button>
+    </span>
+  </div>
+
+  <nav id="smBreadcrumb" class="sm-breadcrumb" aria-label="Score map breadcrumb"></nav>
+
+  <!-- Drill levels 0 (categories) & 1 (sub-categories): card grids -->
+  <div id="sm-cards" class="sm-cards"></div>
+
+  <!-- Drill level 2 (leaf): focused graph of one sub-category + legend/explanation rail -->
+  <div id="sm-leaf-wrap" class="sm-leaf-wrap" hidden>
+    <div class="sm-leaf-toolbar">
+      <span class="sm-leaf-hint">Hover a node for a quick read · click to pin details · click a portal (↗) to jump</span>
+      <button type="button" class="btn btn-secondary" id="smLeafRailToggle">Hide legend</button>
+    </div>
+    <div class="sm-leaf-body">
+      <div id="sm-leaf" class="map-canvas sm-leaf"></div>
+      <div id="sm-tip" class="sm-tip" hidden></div>
+      <aside id="sm-leaf-rail" class="sm-leaf-rail">
+        <div id="sm-legend" class="sm-legend"></div>
+        <div id="sm-detail" class="sm-leaf-detail">
+          <p class="text-muted">Hover a node for a quick read; click it to pin the full explanation here.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Expert mode: the flat full graph + filter sidebar -->
+  <div id="sm-stage" class="map-layout" hidden>
+    <aside class="map-sidebar">
+      <div class="map-filter-group">
+        <label class="map-check"><input type="checkbox" id="toggleFull"> Show full graph (all metrics)</label>
+        <label class="map-check"><input type="checkbox" id="toggleCrossOnly"> Cross-category rules only
+          <span class="text-muted">(<%= meta.counts.crossCategoryRules %>)</span></label>
+      </div>
+
+      <h4>Link types</h4>
+      <div class="map-filter-group">
+        <label class="map-check"><input type="checkbox" id="edge_triggers" checked> <span class="lg-line lg-triggers"></span> rule trigger</label>
+        <label class="map-check"><input type="checkbox" id="edge_affects" checked> <span class="lg-line lg-affects"></span> rule effect</label>
+        <label class="map-check"><input type="checkbox" id="edge_derives" checked> <span class="lg-line lg-derives"></span> derived from</label>
+        <label class="map-check"><input type="checkbox" id="edge_gates" checked> <span class="lg-line lg-gates"></span> applies-when gate</label>
+        <label class="map-check"><input type="checkbox" id="edge_rolls_up" checked> <span class="lg-line lg-rollup"></span> rolls up (backbone)</label>
+        <label class="map-check"><input type="checkbox" id="edge_crit_gate"> <span class="lg-line lg-critgate"></span> criticality gate</label>
+      </div>
+
+      <h4>Pillars</h4>
+      <div class="map-filter-group">
+        <% meta.pillars.forEach(function(p) { %>
+          <label class="map-check"><input type="checkbox" class="pillar-filter" value="<%= p.id %>" checked>
+            <span class="lg-swatch" style="background:<%= p.color %>"></span><%= p.name %></label>
+        <% }) %>
+      </div>
+
+      <h4>Sources</h4>
+      <div class="map-filter-group">
+        <% meta.sources.forEach(function(s) { %>
+          <label class="map-check"><input type="checkbox" class="source-filter" value="<%= s %>" checked> <%= s %></label>
+        <% }) %>
+      </div>
+
+      <h4>Legend</h4>
+      <div class="map-legend">
+        <div><span class="lg-node lg-metric"></span> metric (fill = pillar, border = criticality)</div>
+        <div><span class="lg-node lg-derived"></span> derived metric</div>
+        <div><span class="lg-node lg-rule"></span> consistency rule (fill = severity)</div>
+        <div><span class="lg-node lg-sub"></span> subcategory &nbsp; <span class="lg-node lg-pillar"></span> pillar</div>
+        <div class="text-muted" style="margin-top:6px">Tap a node to focus its neighbourhood; tap empty space to reset.</div>
+      </div>
+      <div id="mapDetail" class="map-detail" style="display:none"></div>
+    </aside>
+
+    <div id="cy" class="map-canvas"></div>
+  </div>
+</div>
+
+<script>
+  window.SCORE_MAP_DATA = {
+    tech: <%- JSON.stringify(tech) %>,
+    graph: <%- JSON.stringify(graph).replace(/</g, '\\u003c') %>,
+    result: <%- JSON.stringify(result).replace(/</g, '\\u003c') %>,
+    values: <%- JSON.stringify(values).replace(/</g, '\\u003c') %>
+  };
+</script>
+<script src="/vendor/dagre/dagre.min.js"></script>
+<script src="/vendor/cytoscape/cytoscape.min.js"></script>
+<script src="/vendor/cytoscape-dagre/cytoscape-dagre.js"></script>
+<script src="/js/score-map-style.js"></script>
+<script src="/js/score-map.js"></script>
+<script src="/js/score-map-drill.js"></script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,4 @@
+# LF everywhere, also on a Windows checkout (deployment target is Linux)
+* text=auto eol=lf
+*.png binary
+*.xlsx binary

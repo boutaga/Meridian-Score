@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/boutaga/Meridian-Score/discussions
+    about: Ask how the score works, discuss a metric, or propose a direction before opening a change.

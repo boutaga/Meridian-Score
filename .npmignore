@@ -1,0 +1,10 @@
+simulator/
+test/
+docs/
+scripts/
+.claude/
+.github/
+coverage/
+*.md
+!README.md
+!LICENSE

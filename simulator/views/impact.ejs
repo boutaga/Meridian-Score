@@ -1,0 +1,165 @@
+<% var title = 'Impact Analyzer'; %>
+<%- include('partials/header') %>
+
+<h1>Weight Impact Analyzer - <%= tech.charAt(0).toUpperCase() + tech.slice(1) %></h1>
+
+<p>Modify metric criticality, enable or disable metrics, edit flat thresholds, add new metrics, or adjust subcategory point allocations, then click Compare. Export downloads the modified catalog as JSON.</p>
+
+<div class="impact-controls">
+  <label>Sample data:
+    <select id="impactScenario">
+      <option value="healthy">Healthy</option>
+      <option value="critical">Critical</option>
+    </select>
+  </label>
+  <button class="btn btn-primary" onclick="compareImpact()">Compare</button>
+  <button class="btn btn-secondary" id="exportBtn" onclick="exportCatalog()" disabled title="Run Compare first, then export if validation passes">Export Rules Bundle</button>
+  <span id="changesSummary" class="text-muted"></span>
+</div>
+
+<div class="impact-layout">
+  <div class="impact-editor">
+
+    <h2>Subcategory Point Allocations</h2>
+    <p class="text-muted">Points must sum to 20 per pillar.</p>
+
+    <% var currentPillar = ''; %>
+    <% subcategories.forEach(function(s) { %>
+      <% if (s.pillar !== currentPillar) { currentPillar = s.pillar; %>
+        <h3 class="impact-pillar-header"><%= s.pillarName %> (20 pts)</h3>
+      <% } %>
+      <div class="impact-subcat-row" data-pillar="<%= s.pillar %>">
+        <label><%= s.name %></label>
+        <input type="number" class="subcat-points" data-subcat="<%= s.id %>" data-pillar="<%= s.pillar %>" value="<%= s.maxPoints %>" min="0" max="20" step="1" onchange="validatePillarSum('<%= s.pillar %>')">
+        <span class="subcat-metric-count"><%= s.metrics.length %> metrics</span>
+      </div>
+    <% }) %>
+
+    <div id="pillarValidation"></div>
+
+    <h2>Metrics <small class="text-muted">(uncheck to disable, change criticality)</small></h2>
+
+    <% var currentPillar2 = ''; %>
+    <% subcategories.forEach(function(s) { %>
+      <% if (s.pillar !== currentPillar2) { currentPillar2 = s.pillar; %>
+        <h3 class="impact-pillar-header"><%= s.pillarName %></h3>
+      <% } %>
+      <div class="impact-subcat-section">
+        <h4 class="impact-subcat-title"><%= s.name %> (<%= s.maxPoints %> pts, <%= s.metrics.length %> metrics)</h4>
+        <% s.metrics.forEach(function(m) { %>
+        <div class="impact-metric-row<%= m.derived ? ' impact-metric-derived' : '' %>">
+          <% if (m.derived) { %>
+            <span class="metric-toggle-spacer" title="Derived metrics are engine-computed; toggle/criticality controls are not applicable."></span>
+          <% } else { %>
+            <input type="checkbox" class="metric-toggle" data-metric="<%= m.metric_id %>" checked title="Uncheck to simulate removing this metric">
+          <% } %>
+          <code><%= m.metric_id %></code>
+          <span class="metric-label">
+            <%= m.display_name %>
+            <% if (m.derived) { %><span class="badge badge-derived badge-sm" title="Engine-computed from <%= ((m.derived_from || {}).inputs || []).join(', ') %>">Derived</span><% } %>
+          </span>
+          <% if (m.derived) { %>
+            <span class="metric-crit-readonly" title="Criticality of derived metrics is fixed by the catalog and not editable here.">
+              <span class="badge badge-<%= m.criticality %>"><%= m.criticality %></span>
+            </span>
+          <% } else { %>
+            <select class="metric-crit" data-metric="<%= m.metric_id %>">
+              <option value="critical" <%= m.criticality === 'critical' ? 'selected' : '' %>>Critical (3x)</option>
+              <option value="important" <%= m.criticality === 'important' ? 'selected' : '' %>>Important (2x)</option>
+              <option value="advisory" <%= m.criticality === 'advisory' ? 'selected' : '' %>>Advisory (1x)</option>
+            </select>
+          <% } %>
+        </div>
+        <% if (!m.derived) { var ec = m.evaluation_config || {}; %>
+        <details class="metric-thresholds" data-metric="<%= m.metric_id %>" data-evaltype="<%= m.evaluation_type %>" data-editable="<%= m.editableThreshold ? '1' : '0' %>">
+          <summary>thresholds</summary>
+          <div class="thr-row">
+            <% if (!m.editableThreshold) { %>
+              <span class="thr-readonly">Profile-keyed / size-relative / declaration-keyed: edit in the JSON.</span>
+            <% } else if (m.evaluation_type === 'boolean') { %>
+              <label>pass value <input type="text" class="thr-pass-value" value="<%= ec.pass_value !== undefined ? String(ec.pass_value) : 'true' %>"></label>
+              <% if (ec.check) { %><span class="thr-readonly">check: <%= ec.check %></span><% } %>
+            <% } else if (m.evaluation_type === 'enum') { %>
+              <label>pass values <input type="text" class="thr-pass-values" value="<%= (ec.pass_values || []).join(', ') %>" placeholder="comma-separated"></label>
+            <% } else { %>
+              <label>min <input type="number" class="thr-min" step="any" value="<%= ec.min !== undefined ? ec.min : '' %>"></label>
+              <label>max <input type="number" class="thr-max" step="any" value="<%= ec.max !== undefined ? ec.max : '' %>"></label>
+              <% if (ec.unit) { %><span class="thr-readonly"><%= ec.unit %></span><% } %>
+            <% } %>
+          </div>
+        </details>
+        <% } %>
+        <% }) %>
+      </div>
+    <% }) %>
+
+
+    <h2>Add New Metrics</h2>
+    <p class="text-muted">Simulate adding metrics. They will be scored with the sample value you provide.</p>
+
+    <div id="newMetricsList"></div>
+
+    <button class="btn btn-secondary" onclick="addNewMetricRow()">+ Add Metric</button>
+
+
+    <template id="newMetricTemplate">
+      <div class="new-metric-form">
+        <button class="new-metric-remove" onclick="this.parentElement.remove()" title="Remove">&times;</button>
+        <div class="new-metric-row">
+          <label>ID <input type="text" class="nm-id" placeholder="e.g. SEC-3.5"></label>
+          <label>Legacy Name <input type="text" class="nm-legacy" placeholder="e.g. audit_log_rotation"></label>
+          <label>Display Name <input type="text" class="nm-display" placeholder="e.g. Audit Log Rotation"></label>
+        </div>
+        <div class="new-metric-row">
+          <label>Subcategory
+            <select class="nm-subcategory">
+              <% subcategories.forEach(function(s) { %>
+                <option value="<%= s.id %>"><%= s.pillarName %> > <%= s.name %></option>
+              <% }) %>
+            </select>
+          </label>
+          <label>Criticality
+            <select class="nm-criticality">
+              <option value="advisory">Advisory (1x)</option>
+              <option value="important">Important (2x)</option>
+              <option value="critical">Critical (3x)</option>
+            </select>
+          </label>
+          <label>Type
+            <select class="nm-evaltype">
+              <option value="boolean">Boolean</option>
+              <option value="enum">Enum</option>
+              <option value="threshold">Threshold</option>
+            </select>
+          </label>
+        </div>
+        <div class="new-metric-row">
+          <label>Sample Value <input type="text" class="nm-value" placeholder="e.g. true, on, 50"></label>
+          <label>Source
+            <select class="nm-source">
+              <option value="sql">SQL</option>
+              <option value="manual">Manual</option>
+              <option value="zabbix">Monitoring</option>
+            </select>
+          </label>
+          <label>License (optional)
+            <select class="nm-license">
+              <option value="">— none —</option>
+              <% ['enterprise_edition','diagnostic_pack','tuning_pack','advanced_security','advanced_compression','partitioning','rac','active_data_guard'].forEach(function(opt) { %><option value="<%= opt %>"><%= opt %></option><% }) %>
+            </select>
+          </label>
+        </div>
+      </div>
+    </template>
+
+  </div>
+
+  <div class="impact-results">
+    <h2>Comparison</h2>
+    <div id="impactResults">
+      <p class="text-muted">Click "Compare" to see the impact of your changes.</p>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

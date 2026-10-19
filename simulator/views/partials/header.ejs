@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'Scoring Simulator' %> - Meridian scoring simulator</title>
+  <script>
+    // Apply the saved theme before first paint (no flash). Falls back to the OS preference.
+    (function () {
+      try {
+        var t = localStorage.getItem('sim-theme');
+        if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { /* storage unavailable */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <span class="brand-mark">M</span>
+        <span class="brand-text">Meridian<small>scoring simulator</small></span>
+      </div>
+      <div class="tech-selector">
+        <label class="sr-only" for="techSelect">Technology</label>
+        <select id="techSelect" onchange="window.location.href = (activePage === 'rules' ? ('/metrics/' + this.value + '/rules') : ('/<%= activePage %>/' + this.value))">
+          <% technologies.forEach(function(t) { %>
+            <option value="<%= t %>" <%= t === tech ? 'selected' : '' %>><%= t.charAt(0).toUpperCase() + t.slice(1) %></option>
+          <% }) %>
+        </select>
+        <script>const activePage = <%- JSON.stringify(activePage) %>;</script>
+      </div>
+      <div class="version-chip" title="Engine package version and catalog version">engine <%= engineVersion %> · catalog <%= catalogVersionOf(tech) %></div>
+      <% if (catalogMaturityOf(tech)) { %><div class="version-chip maturity-chip maturity-<%= catalogMaturityOf(tech) %>" title="Catalog maturity. draft: not yet reviewed by a technology leader. measurement-reviewed: how values are collected was reviewed, scoring validation pending. field-evaluated: scoring checked against real estates. stable: reviewed evidence for every scored judgment.">maturity: <%= catalogMaturityOf(tech) %></div><% } %>
+      <nav class="sidenav">
+        <a href="/overview/<%= tech %>" class="<%= activePage === 'overview' ? 'active' : '' %>">Overview</a>
+        <a href="/model/<%= tech %>" class="<%= activePage === 'model' ? 'active' : '' %>">How the score works</a>
+        <a href="/metrics/<%= tech %>" class="<%= activePage === 'metrics' ? 'active' : '' %>">Metrics</a>
+        <a href="/metrics/<%= tech %>/rules" class="sub <%= activePage === 'rules' ? 'active' : '' %>">Rules</a>
+        <a href="/simulate/<%= tech %>" class="<%= activePage === 'simulate' ? 'active' : '' %>">Simulator</a>
+        <a href="/score-map/<%= tech %>" class="<%= activePage === 'score-map' ? 'active' : '' %>">Score Map</a>
+        <a href="/impact/<%= tech %>" class="<%= activePage === 'impact' ? 'active' : '' %>">Impact Analyzer</a>
+      </nav>
+      <div class="sidebar-foot">
+        <button type="button" class="btn btn-ghost btn-sm" id="themeToggle" onclick="toggleTheme()" title="Switch between light and dark">Theme</button>
+      </div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button type="button" class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Menu">&#9776;</button>
+        <span class="topbar-title"><%= typeof title !== 'undefined' ? title : '' %></span>
+        <span class="topbar-tech"><%= tech.charAt(0).toUpperCase() + tech.slice(1) %></span>
+      </header>
+      <main class="container">

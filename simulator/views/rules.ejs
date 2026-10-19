@@ -1,0 +1,187 @@
+<% var title = 'Cross-Metric Consistency Rules'; %>
+<%- include('partials/header') %>
+
+<h1>Cross-Metric Consistency Rules — <%= tech.charAt(0).toUpperCase() + tech.slice(1) %></h1>
+
+<p>
+  Declarative inter-metric checks. Each rule expresses a condition over multiple metrics and emits a finding when violated.
+  <strong>Score adjustments are live</strong> (since engine v1.6.0): <code>subcategory_cap</code>, <code>subcategory_deduction</code>,
+  <code>pillar_deduction</code>, and <code>metric_zero</code> (v1.8.0) move the score; <code>none</code> emits the finding only.
+  One rule can carry several adjustments via the plural <code>score_adjustments: []</code> form — author it in the JSON predicate
+  area of an exported catalog (the form below edits the singular shape).
+  See <a href="/metrics/<%= tech %>">Metrics</a> for the underlying catalog.
+</p>
+
+<div class="rules-toolbar">
+  <button class="btn btn-secondary" onclick="addRuleRow()">+ Add Rule</button>
+  <button class="btn btn-primary" onclick="validateRules()">Validate</button>
+  <button class="btn btn-secondary" onclick="exportRulesFullCatalog()">Export Full Catalog</button>
+  <button class="btn btn-secondary" onclick="exportRulesOnly()">Export Rules Only</button>
+  <span id="rulesSummary" class="text-muted"></span>
+</div>
+
+<div id="rulesValidation" class="rules-validation"></div>
+
+<datalist id="metricNames">
+  <% legacyNames.forEach(function(n) { %>
+    <option value="<%= n %>"></option>
+  <% }) %>
+</datalist>
+
+<script>window.METRICS_INDEX = <%- JSON.stringify(metricsIndex) %>;</script>
+
+<div id="rulesList" data-original-rule-ids="<%= consistencyRules.map(r => r.rule_id).join(',') %>">
+  <% consistencyRules.forEach(function(rule) { %>
+    <div class="rule-card" data-rule-id="<%= rule.rule_id %>" data-template="custom" data-score-adjustments="<%= rule.on_violation && Array.isArray(rule.on_violation.score_adjustments) ? JSON.stringify(rule.on_violation.score_adjustments) : '' %>">
+      <div class="rule-card-header">
+        <button type="button" class="rule-toggle" onclick="toggleRuleCard(this)">[+]</button>
+        <code class="rule-id-display"><%= rule.rule_id %></code>
+        <span class="rule-title-display"><%= rule.title || '' %></span>
+        <span class="rule-severity rule-sev-<%= rule.on_violation && rule.on_violation.severity || 'info' %>"><%= rule.on_violation && rule.on_violation.severity || 'info' %></span>
+        <span class="rule-adjust-display"><%= rule.on_violation && Array.isArray(rule.on_violation.score_adjustments) ? rule.on_violation.score_adjustments.map(function(a){ return a.type; }).join(' + ') : (rule.on_violation && rule.on_violation.score_adjustment ? rule.on_violation.score_adjustment.type : 'none') %></span>
+        <button type="button" class="btn-delete-rule" onclick="markRuleDeleted(this)" title="Delete rule">&times;</button>
+      </div>
+      <div class="rule-card-body" style="display:none">
+        <div class="rule-row">
+          <label>Rule ID <input type="text" class="rule-id" value="<%= rule.rule_id %>"></label>
+          <label>Severity
+            <select class="rule-severity-input">
+              <option value="critical" <%= rule.on_violation && rule.on_violation.severity === 'critical' ? 'selected' : '' %>>critical</option>
+              <option value="warning"  <%= rule.on_violation && rule.on_violation.severity === 'warning'  ? 'selected' : '' %>>warning</option>
+              <option value="info"     <%= rule.on_violation && rule.on_violation.severity === 'info'     ? 'selected' : '' %>>info</option>
+            </select>
+          </label>
+          <label>Pillar hint
+            <select class="rule-pillar-hint">
+              <option value="">(none)</option>
+              <% pillarIds.forEach(function(p) { %>
+                <option value="<%= p %>" <%= rule.pillar_hint === p ? 'selected' : '' %>><%= p %></option>
+              <% }) %>
+            </select>
+          </label>
+        </div>
+        <label>Title <input type="text" class="rule-title" value="<%= (rule.title || '').replace(/"/g, '&quot;') %>"></label>
+        <label>Description <textarea class="rule-description" rows="2"><%= rule.description || '' %></textarea></label>
+        <h4>Score adjustment</h4>
+        <div class="rule-row">
+          <label>Type
+            <select class="rule-adjust-type" onchange="updateAdjustFields(this)">
+              <option value="none" <%= rule.on_violation && rule.on_violation.score_adjustment && rule.on_violation.score_adjustment.type === 'none' ? 'selected' : '' %>>none (warning only)</option>
+              <option value="subcategory_cap" <%= rule.on_violation && rule.on_violation.score_adjustment && rule.on_violation.score_adjustment.type === 'subcategory_cap' ? 'selected' : '' %>>subcategory_cap</option>
+              <option value="subcategory_deduction" <%= rule.on_violation && rule.on_violation.score_adjustment && rule.on_violation.score_adjustment.type === 'subcategory_deduction' ? 'selected' : '' %>>subcategory_deduction</option>
+              <option value="pillar_deduction" <%= rule.on_violation && rule.on_violation.score_adjustment && rule.on_violation.score_adjustment.type === 'pillar_deduction' ? 'selected' : '' %>>pillar_deduction</option>
+              <option value="metric_zero" <%= rule.on_violation && rule.on_violation.score_adjustment && rule.on_violation.score_adjustment.type === 'metric_zero' ? 'selected' : '' %>>metric_zero (v1.8)</option>
+            </select>
+          </label>
+          <label>Target
+            <input type="text" class="rule-adjust-target" list="targetOptions" value="<%= rule.on_violation && rule.on_violation.score_adjustment && rule.on_violation.score_adjustment.target || '' %>" placeholder="subcategory_id, pillar_id, or metric legacy_name">
+          </label>
+          <label>cap_pct (0–100)
+            <input type="number" class="rule-adjust-cap" value="<%= rule.on_violation && rule.on_violation.score_adjustment && typeof rule.on_violation.score_adjustment.cap_pct === 'number' ? rule.on_violation.score_adjustment.cap_pct : '' %>" min="0" max="100" step="1">
+          </label>
+          <label>points (≥0)
+            <input type="number" class="rule-adjust-points" value="<%= rule.on_violation && rule.on_violation.score_adjustment && typeof rule.on_violation.score_adjustment.points === 'number' ? rule.on_violation.score_adjustment.points : '' %>" min="0" step="0.1">
+          </label>
+        </div>
+        <label>Violation title <input type="text" class="rule-violation-title" value="<%= (rule.on_violation && rule.on_violation.title || '').replace(/"/g, '&quot;') %>"></label>
+        <label>Violation description <textarea class="rule-violation-description" rows="2"><%= rule.on_violation && rule.on_violation.description || '' %></textarea></label>
+        <label>Remediation <textarea class="rule-remediation" rows="2"><%= rule.on_violation && rule.on_violation.remediation || '' %></textarea></label>
+        <%- include('partials/rule-template-form') %>
+        <label>applies_when (JSON predicate)
+          <textarea class="rule-applies-when" rows="6"><%= JSON.stringify(rule.applies_when, null, 2) %></textarea>
+        </label>
+        <label>Tags (comma-separated) <input type="text" class="rule-tags" value="<%= (rule.tags || []).join(', ') %>"></label>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+<datalist id="targetOptions">
+  <% subcategoryIds.forEach(function(id) { %>
+    <option value="<%= id %>"><%= subcategoryLabels[id] %></option>
+  <% }) %>
+  <% pillarIds.forEach(function(p) { %>
+    <option value="<%= p %>">pillar: <%= p %></option>
+  <% }) %>
+  <% legacyNames.forEach(function(n) { %>
+    <option value="<%= n %>">metric: <%= n %></option>
+  <% }) %>
+</datalist>
+
+<details class="rules-help">
+  <summary>Predicate DSL reference</summary>
+  <p>Each rule's <code>applies_when</code> is a JSON predicate. Composites wrap leaves; leaves carry exactly one operator.</p>
+  <pre><code>// Composites
+{ "all_of": [ ... ] }   // every child must be true
+{ "any_of": [ ... ] }   // at least one child must be true
+{ "none_of": [ ... ] }  // no child may be true
+
+// Leaves (each takes a metric reference + one operator)
+{ "metric": "rpo_target",        "equals":     "rpo_5" }
+{ "metric": "dump_schedule",     "in":         ["daily", "weekly"] }
+{ "metric": "wal_level",         "not_in":     ["minimal"] }
+{ "metric": "ssl_connection_pct","gt":         0 }     // also gte / lt / lte
+{ "metric": "archive_mode",      "is_truthy":  true }  // true | "on" | "yes" | 1 | ...
+{ "metric": "rto_target",        "provided":   true }  // value present at all</code></pre>
+  <p>Available metric names (legacy_name) for this catalog: <span class="text-muted"><%= legacyNames.length %> total — autocomplete in your editor of choice.</span></p>
+</details>
+
+<template id="ruleTemplate">
+  <div class="rule-card rule-card-new" data-rule-id="" data-template="t1">
+    <div class="rule-card-header">
+      <button type="button" class="rule-toggle" onclick="toggleRuleCard(this)">[-]</button>
+      <code class="rule-id-display">(new)</code>
+      <span class="rule-title-display">new rule</span>
+      <span class="rule-severity rule-sev-warning">warning</span>
+      <span class="rule-adjust-display">none</span>
+      <button type="button" class="btn-delete-rule" onclick="this.closest('.rule-card').remove()" title="Remove">&times;</button>
+    </div>
+    <div class="rule-card-body">
+      <div class="rule-row">
+        <label>Rule ID <input type="text" class="rule-id" placeholder="e.g. BAK-CR-4"></label>
+        <label>Severity
+          <select class="rule-severity-input">
+            <option value="critical">critical</option>
+            <option value="warning" selected>warning</option>
+            <option value="info">info</option>
+          </select>
+        </label>
+        <label>Pillar hint
+          <select class="rule-pillar-hint">
+            <option value="">(none)</option>
+            <% pillarIds.forEach(function(p) { %><option value="<%= p %>"><%= p %></option><% }) %>
+          </select>
+        </label>
+      </div>
+      <label>Title <input type="text" class="rule-title"></label>
+      <label>Description <textarea class="rule-description" rows="2"></textarea></label>
+      <h4>Score adjustment</h4>
+      <div class="rule-row">
+        <label>Type
+          <select class="rule-adjust-type" onchange="updateAdjustFields(this)">
+            <option value="none" selected>none (warning only)</option>
+            <option value="subcategory_cap">subcategory_cap</option>
+            <option value="subcategory_deduction">subcategory_deduction</option>
+            <option value="pillar_deduction">pillar_deduction</option>
+            <option value="metric_zero">metric_zero (v1.8)</option>
+          </select>
+        </label>
+        <label>Target <input type="text" class="rule-adjust-target" list="targetOptions" placeholder="subcategory_id, pillar_id, or metric legacy_name"></label>
+        <label>cap_pct (0–100) <input type="number" class="rule-adjust-cap" min="0" max="100" step="1"></label>
+        <label>points (≥0) <input type="number" class="rule-adjust-points" min="0" step="0.1"></label>
+      </div>
+      <label>Violation title <input type="text" class="rule-violation-title"></label>
+      <label>Violation description <textarea class="rule-violation-description" rows="2"></textarea></label>
+      <label>Remediation <textarea class="rule-remediation" rows="2"></textarea></label>
+      <%- include('partials/rule-template-form') %>
+      <label>applies_when (JSON predicate) <textarea class="rule-applies-when" rows="6">{
+  "all_of": [
+    { "metric": "metric_legacy_name", "in": ["value"] }
+  ]
+}</textarea></label>
+      <label>Tags (comma-separated) <input type="text" class="rule-tags"></label>
+    </div>
+  </div>
+</template>
+
+<%- include('partials/footer') %>

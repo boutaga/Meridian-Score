@@ -1,0 +1,118 @@
+<div class="rule-template-section">
+  <label class="rule-template-label">Authoring template
+    <select class="rule-template-select" onchange="applyTemplate(this.closest('.rule-card'), this.value)">
+      <option value="t1">T1 — When metric A is in [values] AND metric B is in [values]</option>
+      <option value="t2">T2 — When metric A is truthy AND metric B is in [values]</option>
+      <option value="t3">T3 — When metric A is in [values] AND metric B [op] number</option>
+      <option value="t4">T4 — When workload profile is [oltp/olap/…] AND metric [op] value (v1.6.0)</option>
+      <option value="t5">T5 — When system fact [anchor] [op] number AND metric [op] value (v1.6.0)</option>
+      <option value="custom">Custom (advanced — raw JSON)</option>
+    </select>
+  </label>
+
+  <div class="template-form" data-tpl="t1">
+    <div class="rule-row">
+      <label>Metric A <input type="text" class="tpl-t1-metric-a" list="metricNames" placeholder="legacy_name"></label>
+      <label>A in values (comma-separated) <input type="text" class="tpl-t1-values-a" placeholder="e.g. on, always"></label>
+    </div>
+    <div class="rule-row">
+      <label>Metric B <input type="text" class="tpl-t1-metric-b" list="metricNames" placeholder="legacy_name"></label>
+      <label>B in values (comma-separated) <input type="text" class="tpl-t1-values-b" placeholder="e.g. daily"></label>
+    </div>
+  </div>
+
+  <div class="template-form" data-tpl="t2">
+    <div class="rule-row">
+      <label>Metric A (must be truthy) <input type="text" class="tpl-t2-metric-a" list="metricNames" placeholder="legacy_name"></label>
+    </div>
+    <div class="rule-row">
+      <label>Metric B <input type="text" class="tpl-t2-metric-b" list="metricNames" placeholder="legacy_name"></label>
+      <label>B in values (comma-separated) <input type="text" class="tpl-t2-values-b" placeholder="e.g. minimal"></label>
+    </div>
+  </div>
+
+  <div class="template-form" data-tpl="t3">
+    <div class="rule-row">
+      <label>Metric A <input type="text" class="tpl-t3-metric-a" list="metricNames" placeholder="legacy_name"></label>
+      <label>A in values (comma-separated) <input type="text" class="tpl-t3-values-a" placeholder="e.g. on"></label>
+    </div>
+    <div class="rule-row">
+      <label>Metric B <input type="text" class="tpl-t3-metric-b" list="metricNames" placeholder="legacy_name"></label>
+      <label>Operator
+        <select class="tpl-t3-op">
+          <option value="lt">&lt; (less than)</option>
+          <option value="lte">&le; (less or equal)</option>
+          <option value="gt">&gt; (greater than)</option>
+          <option value="gte">&ge; (greater or equal)</option>
+        </select>
+      </label>
+      <label>Number <input type="number" class="tpl-t3-number" step="any" placeholder="e.g. 100"></label>
+    </div>
+  </div>
+
+  <div class="template-form" data-tpl="t4">
+    <p class="template-hint">Workload-gated condition (v1.6.0). The rule fires only when the active workload profile matches AND the metric condition holds. Example: <code>workload_profile=olap AND jit is_truthy=false</code>.</p>
+    <div class="rule-row">
+      <label>Workload profile(s) (comma-separated)
+        <input type="text" class="tpl-t4-profiles" placeholder="e.g. olap or olap, mixed" value="olap">
+      </label>
+    </div>
+    <div class="rule-row">
+      <label>Metric <input type="text" class="tpl-t4-metric" list="metricNames" placeholder="legacy_name"></label>
+      <label>Operator
+        <select class="tpl-t4-op">
+          <option value="is_truthy_false">is NOT truthy (off/false/0)</option>
+          <option value="is_truthy_true">IS truthy (on/true/1)</option>
+          <option value="equals">= equals</option>
+          <option value="in">∈ in [values]</option>
+          <option value="lt">&lt; less than</option>
+          <option value="lte">&le; less or equal</option>
+          <option value="gt">&gt; greater than</option>
+          <option value="gte">&ge; greater or equal</option>
+        </select>
+      </label>
+      <label>Value <input type="text" class="tpl-t4-value" placeholder="e.g. off or 100 or on, always"></label>
+    </div>
+  </div>
+
+  <div class="template-form" data-tpl="t5">
+    <p class="template-hint">System-fact gated condition (v1.6.0). The rule fires only when the host fact crosses a threshold AND the metric condition holds. Example: <code>ram_kb &gt;= 8 GB AND huge_pages='off'</code>.</p>
+    <div class="rule-row">
+      <label>System fact
+        <select class="tpl-t5-anchor">
+          <option value="ram_kb">ram_kb</option>
+          <option value="ram_bytes">ram_bytes</option>
+          <option value="cpu_count">cpu_count</option>
+          <option value="storage_size_kb">storage_size_kb</option>
+          <option value="storage_size_bytes">storage_size_bytes</option>
+        </select>
+      </label>
+      <label>Comparator
+        <select class="tpl-t5-anchor-op">
+          <option value="gte">&ge; greater or equal</option>
+          <option value="gt">&gt; greater than</option>
+          <option value="lt">&lt; less than</option>
+          <option value="lte">&le; less or equal</option>
+          <option value="equals">= equals</option>
+        </select>
+      </label>
+      <label>Threshold <input type="number" class="tpl-t5-anchor-value" step="any" placeholder="e.g. 8388608"></label>
+    </div>
+    <div class="rule-row">
+      <label>Metric <input type="text" class="tpl-t5-metric" list="metricNames" placeholder="legacy_name"></label>
+      <label>Operator
+        <select class="tpl-t5-op">
+          <option value="is_truthy_false">is NOT truthy</option>
+          <option value="is_truthy_true">IS truthy</option>
+          <option value="equals">= equals</option>
+          <option value="in">∈ in [values]</option>
+          <option value="lt">&lt; less than</option>
+          <option value="lte">&le; less or equal</option>
+          <option value="gt">&gt; greater than</option>
+          <option value="gte">&ge; greater or equal</option>
+        </select>
+      </label>
+      <label>Value <input type="text" class="tpl-t5-value" placeholder="e.g. off or 100"></label>
+    </div>
+  </div>
+</div>

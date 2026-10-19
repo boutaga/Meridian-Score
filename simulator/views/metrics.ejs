@@ -1,0 +1,75 @@
+<% var title = tech.charAt(0).toUpperCase() + tech.slice(1) + ' Metrics'; %>
+<%- include('partials/header') %>
+
+<h1><%= tech.charAt(0).toUpperCase() + tech.slice(1) %> Metric Browser</h1>
+
+<form class="filter-bar" method="GET" action="/metrics/<%= tech %>">
+  <input type="text" name="search" placeholder="Search metrics..." value="<%= filter.search %>" class="filter-input">
+  <select name="pillar" class="filter-select">
+    <option value="">All Pillars</option>
+    <% pillars.forEach(function(p) { %>
+      <option value="<%= p.id %>" <%= filter.pillar === p.id ? 'selected' : '' %>><%= p.name %></option>
+    <% }) %>
+  </select>
+  <select name="criticality" class="filter-select">
+    <option value="">All Criticality</option>
+    <option value="critical" <%= filter.criticality === 'critical' ? 'selected' : '' %>>Critical</option>
+    <option value="important" <%= filter.criticality === 'important' ? 'selected' : '' %>>Important</option>
+    <option value="advisory" <%= filter.criticality === 'advisory' ? 'selected' : '' %>>Advisory</option>
+  </select>
+  <select name="source" class="filter-select">
+    <option value="">All Sources</option>
+    <% sources.forEach(function(s) { %>
+      <option value="<%= s %>" <%= filter.source === s ? 'selected' : '' %>><%= s %></option>
+    <% }) %>
+  </select>
+  <select name="evalType" class="filter-select">
+    <option value="">All Types</option>
+    <% evalTypes.forEach(function(t) { %>
+      <option value="<%= t %>" <%= filter.evalType === t ? 'selected' : '' %>><%= t %></option>
+    <% }) %>
+  </select>
+  <button type="submit" class="btn btn-primary">Filter</button>
+  <a href="/metrics/<%= tech %>" class="btn btn-secondary">Clear</a>
+</form>
+
+<p class="result-count">Showing <%= metrics.length %> metrics</p>
+
+<table class="data-table metric-table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Metric</th>
+      <th>Criticality</th>
+      <th>Type</th>
+      <th>Source(s)</th>
+      <th>Pass criterion</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% metrics.forEach(function(m) { var criteria = criteriaText(m); %>
+    <tr class="metric-row<%= m.derived ? ' metric-row-derived' : '' %>" data-metric-id="<%= m.metric_id %>" onclick="showMetricDetail('<%= tech %>', '<%= m.metric_id %>')">
+      <td><code><%= m.metric_id %></code></td>
+      <td>
+        <strong><%= m.display_name %></strong>
+        <% if (m.derived) { %><span class="badge badge-derived badge-sm" title="Engine-computed from <%= ((m.derived_from || {}).inputs || []).join(', ') %>">Derived</span><% } %>
+        <% if (m.license_requirement) { %><span class="badge badge-license badge-sm" title="Requires license: <%= m.license_requirement %>"><%= m.license_requirement %></span><% } %>
+        <br><small class="text-muted"><%= m.legacy_name %></small>
+      </td>
+      <td><span class="badge badge-<%= m.criticality %>"><%= m.criticality %></span></td>
+      <td><%= m.evaluation_type %></td>
+      <td><%= m.sources.join(', ') %></td>
+      <td><%= criteria %></td>
+    </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<div id="metricModal" class="drawer" style="display:none">
+  <div class="drawer-panel">
+    <span class="drawer-close" onclick="closeModal()">&times;</span>
+    <div id="metricDetail"></div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

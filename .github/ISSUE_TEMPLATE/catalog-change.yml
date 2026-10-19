@@ -1,0 +1,43 @@
+name: Catalog change proposal
+description: Propose a threshold, criticality, placement, wording or new-metric change in a technology catalog
+title: "[catalog] <technology> <metric id>: <short change>"
+labels: ["catalog"]
+body:
+  - type: dropdown
+    id: technology
+    attributes:
+      label: Technology
+      options: [postgresql, oracle, mysql, mariadb, mongodb, sqlserver]
+    validations:
+      required: true
+  - type: input
+    id: metric
+    attributes:
+      label: Metric id and legacy_name
+      placeholder: "BAK-1.5 redo_log_size (or 'new metric')"
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: What the catalog says today
+      description: Copy the relevant fields (evaluation_config, criticality, description, technical_anchor).
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed change
+      description: The new values, and the SQL or command that measures the metric if it changes.
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Where does this come from
+      description: Vendor documentation, a benchmark (CIS, MAA), field practice. This becomes the metric's `rationale`.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Score impact
+      description: Output of `npm run benchmark <technology> <modified-catalog.json>` or the simulator's Impact Analyzer, if you ran it.

@@ -1,0 +1,95 @@
+<% var title = tech.charAt(0).toUpperCase() + tech.slice(1) + ' Overview'; %>
+<%- include('partials/header') %>
+
+<h1><%= tech.charAt(0).toUpperCase() + tech.slice(1) %> Scoring Overview</h1>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-value"><%= catalog.metrics.length %></div>
+    <div class="stat-label">Total Metrics</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value"><%= Object.keys(catalog.pillars).length %></div>
+    <div class="stat-label">Pillars</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">100</div>
+    <div class="stat-label">Max Score</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">v<%= catalog.version %></div>
+    <div class="stat-label">Catalog Version</div>
+  </div>
+</div>
+
+<h2>Source Distribution</h2>
+<div class="stats-row">
+  <div class="stat-card source-sql">
+    <div class="stat-value"><%= sourceCounts.sql %></div>
+    <div class="stat-label">SQL / Healthcheck</div>
+  </div>
+  <div class="stat-card source-monitoring">
+    <div class="stat-value"><%= sourceCounts.monitoring %></div>
+    <div class="stat-label">Monitoring</div>
+  </div>
+  <div class="stat-card source-manual">
+    <div class="stat-value"><%= sourceCounts.manual %></div>
+    <div class="stat-label">Manual Input</div>
+  </div>
+</div>
+
+<h2>Pillar Structure</h2>
+
+<% pillarData.forEach(function(p) { %>
+<div class="pillar-card">
+  <div class="pillar-header">
+    <h3><%= p.name %></h3>
+    <span class="pillar-points"><%= p.maxPoints %> pts</span>
+    <span class="pillar-metrics"><%= p.metricCount %> metrics (<%= p.criticalCount %> critical)</span>
+  </div>
+  <div class="subcategory-list">
+    <% p.subcategories.forEach(function(s) { %>
+    <div class="subcategory-row">
+      <div class="subcategory-name"><%= s.name %></div>
+      <div class="subcategory-bar-container">
+        <div class="subcategory-bar" style="width: <%= (s.maxPoints / 20) * 100 %>%"><%= s.maxPoints %> pts</div>
+      </div>
+      <div class="subcategory-counts">
+        <% if (s.criticalCount > 0) { %><span class="badge badge-critical"><%= s.criticalCount %> crit</span><% } %>
+        <% if (s.importantCount > 0) { %><span class="badge badge-important"><%= s.importantCount %> imp</span><% } %>
+        <% if (s.advisoryCount > 0) { %><span class="badge badge-advisory"><%= s.advisoryCount %> adv</span><% } %>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+</div>
+<% }) %>
+
+<h2>Criticality Weights</h2>
+<table class="data-table">
+  <thead>
+    <tr><th>Level</th><th>Weight</th><th>Count</th><th>Effect on Failure</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="badge badge-critical">Critical</span></td>
+      <td><%= criticalityWeights.critical %>x</td>
+      <td><%= catalog.metrics.filter(function(m) { return m.criticality === 'critical'; }).length %></td>
+      <td>Subcategory capped at 60%</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-important">Important</span></td>
+      <td><%= criticalityWeights.important %>x</td>
+      <td><%= catalog.metrics.filter(function(m) { return m.criticality === 'important'; }).length %></td>
+      <td>Proportional score reduction</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-advisory">Advisory</span></td>
+      <td><%= criticalityWeights.advisory %>x</td>
+      <td><%= catalog.metrics.filter(function(m) { return m.criticality === 'advisory'; }).length %></td>
+      <td>Minimal impact</td>
+    </tr>
+  </tbody>
+</table>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,117 @@
+<% var title = 'How the score works'; %>
+<%- include('partials/header') %>
+<% var pct = function(x) { return Math.round(x * 100) + ' percent'; }; %>
+<% var w = policy.criticalityWeights; var b = policy.statusBands; %>
+
+<h1>How the score works <span class="text-muted">· <%= tech.charAt(0).toUpperCase() + tech.slice(1) %> catalog <%= catalog.version %></span></h1>
+<p class="lead">Every rule on this page is read from the engine's scoring policy (<code>src/scoring/policy.js</code>, version <%= policy.version %>) and from the selected catalog. Nothing is typed by hand, so what you read here is what the engine computes.</p>
+
+<div class="model-grid">
+  <section class="card">
+    <h2>The shared rules</h2>
+    <ol class="model-rules">
+      <li><strong>Weights.</strong> Inside a subcategory each metric weighs <%= w.critical %>x when critical, <%= w.important %>x when important and <%= w.advisory %>x when advisory. The subcategory score is the weighted pass ratio times the subcategory's points.</li>
+      <li><strong>Subcategory gate.</strong> If any critical metric fails, the subcategory is capped at <%= pct(policy.subcategoryGateCapPct) %> of its points, however well the others score.</li>
+      <li><strong>Pillar cap.</strong> If a critical metric anywhere in the pillar hard-fails (natural score 0) or is missing, the whole pillar is capped at <%= pct(policy.pillarCriticalCapPct) %> of its <%= pillars[0] ? pillars[0].maxPoints : 20 %> points. Partial credit does not trigger it.</li>
+      <li><strong>Pillar zero gate.</strong> A metric flagged <code>gate_scope: pillar</code> that fails zeroes its whole pillar (the metrics are listed below).</li>
+      <li><strong>Partial credit.</strong> A threshold or range metric earns exactly <%= pct(policy.partialCredit.factor) %> of its points, never rounded, when the value is within <%= policy.partialCredit.withinMultiple %>x of the bound, nothing beyond. A value outside its bound is never reported as passed.</li>
+      <li><strong>Missing values.</strong> Every check with no value counts 0 points and is reported as not assessed (1.17.0); a missing critical also trips the gates, except a check outside the run's collection scope; a non-critical declared target left blank costs nothing; a metric whose <code>applies_when</code> is false is not applicable and counts nowhere.</li>
+      <li><strong>Cross-metric rules.</strong> <%= ruleCount %> consistency rules link declared targets to their evidence and can zero a declaration, deduct points or cap a subcategory. See the <a href="/metrics/<%= tech %>/rules">Rules page</a>.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>Status bands</h2>
+    <table class="data-table compact">
+      <thead><tr><th>Status</th><th>Total score</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-status-excellent">excellent</span></td><td><%= b.excellent %> percent or more</td></tr>
+        <tr><td><span class="badge badge-status-good">good</span></td><td><%= b.good %> to <%= b.excellent - 0.01 %> percent</td></tr>
+        <tr><td><span class="badge badge-status-needs_improvement">needs improvement</span></td><td><%= b.needs_improvement %> to <%= b.good - 0.01 %> percent</td></tr>
+        <tr><td><span class="badge badge-status-critical">critical</span></td><td>below <%= b.needs_improvement %> percent</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Read the band with the disposition.</strong> The band follows the total alone, so a failed critical check can sit inside an "excellent" total once its pillar is capped. Every result therefore also carries a disposition: <em>clear</em>, or <em>critical requirement unresolved</em> with the critical checks that failed, are missing, or were invalidated by a cross-metric rule. The simulator shows it next to the score.</p>
+    <h3>Engine defaults</h3>
+    <p>Restore throughput assumed by the restore-time estimate when no restore test attested a rate: <strong><%= policy.defaults.restoreThroughputMbPerSecond %> MB/s</strong>.</p>
+    <p class="text-muted"><%= anchoredCount %> of <%= catalog.metrics.length %> metrics carry the SQL that measures them (technical anchor); open any metric in the <a href="/metrics/<%= tech %>">Metrics browser</a> to read it.</p>
+  </section>
+</div>
+
+<section class="card">
+  <h2>Point budget of this catalog</h2>
+  <table class="data-table compact">
+    <thead><tr><th>Pillar</th><th>Subcategory</th><th>Points</th><th>Metrics</th><th>Critical / Important / Advisory</th><th>Weight pool</th></tr></thead>
+    <tbody>
+    <% pillars.forEach(function(p) { p.subcategories.forEach(function(s, i) { %>
+      <tr>
+        <td><% if (i === 0) { %><strong><%= p.name %></strong> <span class="text-muted">(<%= p.maxPoints %> pts)</span><% } %></td>
+        <td><%= s.name %></td>
+        <td><%= s.maxPoints %></td>
+        <td><%= s.metrics %></td>
+        <td><%= s.counts.critical %> / <%= s.counts.important %> / <%= s.counts.advisory %></td>
+        <td><%= s.pool %></td>
+      </tr>
+    <% }); }); %>
+    </tbody>
+  </table>
+  <% if (example) { %>
+  <p class="model-example"><strong>Worked example.</strong> <%= example.name %> (<%= example.pillarName %>) has <%= example.metrics %> metrics: <%= example.counts.critical %> critical, <%= example.counts.important %> important, <%= example.counts.advisory %> advisory, so the weight pool is <%= example.pool %> (<%= w.critical %>x<%= example.counts.critical %> + <%= w.important %>x<%= example.counts.important %> + <%= w.advisory %>x<%= example.counts.advisory %>) for <%= example.maxPoints %> points. One advisory metric is worth <%= example.advisoryPoints %> points, one critical metric <%= example.criticalPoints %> points, and a failed critical also caps the subcategory at <%= pct(policy.subcategoryGateCapPct) %>.</p>
+  <% } %>
+</section>
+
+<div class="model-grid">
+  <section class="card">
+    <h2>Pillar zero gates in this catalog</h2>
+    <% if (gateMetrics.length) { %>
+    <ul class="plain-list">
+      <% gateMetrics.forEach(function(m) { %>
+      <li><a href="#" onclick="showMetricDetail('<%= tech %>', '<%= m.metric_id %>'); return false;"><code><%= m.metric_id %></code> <%= m.display_name %></a> <span class="text-muted">zeroes <%= m.pillarName %></span></li>
+      <% }) %>
+    </ul>
+    <% } else { %><p class="text-muted">None.</p><% } %>
+  </section>
+
+  <section class="card">
+    <h2>Derived metrics (engine-computed)</h2>
+    <% if (derivedMetrics.length) { %>
+    <table class="data-table compact">
+      <thead><tr><th>Metric</th><th>Expression</th><th>Inputs</th></tr></thead>
+      <tbody>
+      <% derivedMetrics.forEach(function(d) { %>
+        <tr>
+          <td><a href="#" onclick="showMetricDetail('<%= tech %>', '<%= d.metric_id %>'); return false;"><code><%= d.metric_id %></code> <%= d.display_name %></a></td>
+          <td><code class="expr"><%= d.expression || d.formula %></code><% if (d.unit) { %> <span class="text-muted">(<%= d.unit %>)</span><% } %></td>
+          <td><%= d.inputs.join(', ') %></td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+    <% } else { %><p class="text-muted">None in this catalog.</p><% } %>
+  </section>
+</div>
+
+<details class="card details-card">
+  <summary>Vocabularies a catalog author can use (enforced by <code>npm run validate-catalogs</code>)</summary>
+  <% var voc = policy.vocabularies; %>
+  <dl class="vocab">
+    <dt>Sources</dt><dd><%= voc.sources.join(', ') %></dd>
+    <dt>Numeric system facts</dt><dd><%= voc.anchors.join(', ') %></dd>
+    <dt>String system facts</dt><dd><%= voc.stringFacts.join(', ') %></dd>
+    <dt>Workload profiles</dt><dd><%= voc.profiles.join(', ') %></dd>
+    <dt>License requirements</dt><dd><%= voc.licenseRequirements.join(', ') %></dd>
+    <dt>Boolean checks</dt><dd><%= voc.booleanChecks.join(', ') %></dd>
+    <dt>Predicate operators</dt><dd>metric leaves: <%= voc.predicateOperators.metric.join(', ') %>; numeric facts: <%= voc.predicateOperators.systemFact.join(', ') %>; string facts and workload: <%= voc.predicateOperators.stringFact.join(', ') %></dd>
+    <dt>Score adjustments</dt><dd><%= voc.adjustmentTypes.join(', ') %></dd>
+    <dt>Evaluation types</dt><dd><%= voc.evaluationTypes.join(', ') %></dd>
+  </dl>
+</details>
+
+<div id="metricModal" class="drawer" style="display:none">
+  <div class="drawer-panel">
+    <span class="drawer-close" onclick="closeModal()">&times;</span>
+    <div id="metricDetail"></div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

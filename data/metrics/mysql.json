@@ -1,0 +1,2671 @@
+{
+  "version": "1.3.1",
+  "maturity": "draft",
+  "description": "MySQL 8.4 LTS health metric catalog. Derived from dbi services scoring framework. Technology-specific implementation of the universal pillar/subcategory structure. Metric semantics validated against MySQL 8.4 LTS and 9.x innovation releases.",
+  "release_notes": "v1.3.1 (2026-09-23): catalog maturity label added (draft: not yet reviewed by a technology leader, neither for collection nor for scoring). No metric, threshold, weight or rule change. v1.3.0 (PoC): seven hot metrics refactored to use scoring-core v1.5.0 profile-keyed thresholds, plus two long-flagged placement moves applied (mirror of MariaDB v1.3.0 PoC). Affected metrics: CAP-3.2 (purge_lag profile-keyed), PERF-3.1 (innodb_row_lock_waits profile-keyed), PERF-1.1 (buffer_pool_hit_ratio profile-keyed), CAP-3.1 (innodb_buffer_pool_hit_rate MOVED to perf_cache + profile-keyed), CAP-2.2 (thread_cache_hit_rate MOVED to perf_cache), PERF-2.6 (full_table_scan_rate profile-keyed), PERF-3.3 (metadata_lock_waits profile-keyed). All patches compatible with MySQL 8.4 LTS and 9.x. v1.2.0: schema-ready for consistency_rules (rules deferred to Technology Leader work). v1.1.0: Subcategory point allocations within Capacity, Performance, and Future-Proofing pillars differ from the architecture specification (SCORING_SYSTEM_ARCHITECTURE.md section 2.3). These splits have been stable since v1.0.0 and are flagged for tech-leader review. See docs/guides/metric-placement-review.md for details.",
+  "technology": "mysql",
+  "technology_version": "8.4",
+  "pillars": {
+    "backup": {
+      "name": "Backup & Recovery",
+      "maxPoints": 20,
+      "order": 1,
+      "icon": "shield"
+    },
+    "security": {
+      "name": "Security",
+      "maxPoints": 20,
+      "order": 2,
+      "icon": "lock"
+    },
+    "capacity": {
+      "name": "Capacity",
+      "maxPoints": 20,
+      "order": 3,
+      "icon": "chart-bar"
+    },
+    "performance": {
+      "name": "Performance",
+      "maxPoints": 20,
+      "order": 4,
+      "icon": "lightning"
+    },
+    "futureproof": {
+      "name": "Future-Proofing",
+      "maxPoints": 20,
+      "order": 5,
+      "icon": "rocket"
+    }
+  },
+  "subcategories": {
+    "backup_wal": {
+      "pillar": "backup",
+      "name": "Log Archiving",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "backup_dumps": {
+      "pillar": "backup",
+      "name": "Scheduled Backups",
+      "maxPoints": 4,
+      "order": 2
+    },
+    "backup_tools": {
+      "pillar": "backup",
+      "name": "Backup Tools",
+      "maxPoints": 4,
+      "order": 3
+    },
+    "backup_recovery": {
+      "pillar": "backup",
+      "name": "Recovery Readiness",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "backup_retention": {
+      "pillar": "backup",
+      "name": "Retention Compliance",
+      "maxPoints": 3,
+      "order": 5
+    },
+    "security_auth": {
+      "pillar": "security",
+      "name": "Authentication",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "security_encrypt": {
+      "pillar": "security",
+      "name": "Encryption",
+      "maxPoints": 5,
+      "order": 2
+    },
+    "security_audit": {
+      "pillar": "security",
+      "name": "Audit & Logging",
+      "maxPoints": 5,
+      "order": 3
+    },
+    "security_access": {
+      "pillar": "security",
+      "name": "Access Control",
+      "maxPoints": 5,
+      "order": 4
+    },
+    "capacity_storage": {
+      "pillar": "capacity",
+      "name": "Storage",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "capacity_connections": {
+      "pillar": "capacity",
+      "name": "Connections",
+      "maxPoints": 5,
+      "order": 2
+    },
+    "capacity_maintenance": {
+      "pillar": "capacity",
+      "name": "Maintenance",
+      "maxPoints": 6,
+      "order": 3
+    },
+    "capacity_planning": {
+      "pillar": "capacity",
+      "name": "Planning",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "perf_cache": {
+      "pillar": "performance",
+      "name": "Caching",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "perf_queries": {
+      "pillar": "performance",
+      "name": "Query Performance",
+      "maxPoints": 7,
+      "order": 2
+    },
+    "perf_locks": {
+      "pillar": "performance",
+      "name": "Locking",
+      "maxPoints": 4,
+      "order": 3
+    },
+    "perf_replication": {
+      "pillar": "performance",
+      "name": "Replication",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "future_version": {
+      "pillar": "futureproof",
+      "name": "Version Currency",
+      "maxPoints": 7,
+      "order": 1
+    },
+    "future_config": {
+      "pillar": "futureproof",
+      "name": "Configuration",
+      "maxPoints": 3,
+      "order": 2
+    },
+    "future_planning": {
+      "pillar": "futureproof",
+      "name": "Upgrade Planning",
+      "maxPoints": 6,
+      "order": 3
+    },
+    "future_foundation": {
+      "pillar": "futureproof",
+      "name": "Health Foundation",
+      "maxPoints": 4,
+      "order": 4
+    }
+  },
+  "metrics": [
+    {
+      "metric_id": "BAK-1.1",
+      "subcategory": "backup_wal",
+      "legacy_name": "log_bin",
+      "display_name": "Binary Log Enabled",
+      "description": "Whether the MySQL binary log (log_bin) is on. Required for point-in-time recovery and replication.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable binary logging: log_bin = /var/lib/mysql/mysql-bin in my.cnf",
+      "cis_reference": "CIS 6.1",
+      "gate_scope": "pillar"
+    },
+    {
+      "metric_id": "BAK-1.2",
+      "subcategory": "backup_wal",
+      "legacy_name": "binlog_format",
+      "display_name": "Binlog Format ROW",
+      "description": "Binary log format (binlog_format). ROW is required for reliable replication and PITR; STATEMENT/MIXED can produce non-deterministic results.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ROW"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set binlog_format = ROW in my.cnf for reliable replication and PITR",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.3",
+      "subcategory": "backup_wal",
+      "legacy_name": "binlog_expire_logs_seconds",
+      "display_name": "Binary Log Expire Seconds",
+      "description": "Binary log retention window (binlog_expire_logs_seconds). Must cover the PITR recovery window (target 1-30 days).",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 86400,
+        "max": 2592000
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set binlog_expire_logs_seconds (MySQL 8.0+) or expire_logs_days in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.4",
+      "subcategory": "backup_wal",
+      "legacy_name": "gtid_mode",
+      "display_name": "GTID Mode Enabled",
+      "description": "Whether Global Transaction IDs (gtid_mode) are on. Required for reliable replication failover and PITR.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable GTID: gtid_mode = ON and enforce_gtid_consistency = ON in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.5",
+      "subcategory": "backup_wal",
+      "legacy_name": "sync_binlog",
+      "display_name": "Binlog Sync Durable",
+      "description": "Whether the binary log is flushed per transaction (sync_binlog=1). Required to avoid losing committed transactions on crash.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set sync_binlog = 1 in my.cnf for crash-safe binary logging",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.1",
+      "subcategory": "backup_dumps",
+      "legacy_name": "dump_schedule",
+      "display_name": "Backup Schedule Defined",
+      "description": "Whether a regular backup schedule is defined and running. Required to bound the data loss window.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "daily",
+          "hourly",
+          "continuous",
+          "binlog_only"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Document and implement a backup schedule (daily recommended)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.2",
+      "subcategory": "backup_dumps",
+      "legacy_name": "last_backup_age_hours",
+      "display_name": "Last Backup Age",
+      "description": "Age of the most recent successful backup. Must stay within the RPO window or recovery loses data beyond policy.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 24,
+        "unit": "hours"
+      },
+      "sources": [
+        "zabbix",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Verify backup jobs are running and completing successfully",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.3",
+      "subcategory": "backup_dumps",
+      "legacy_name": "mysqldump_schedule",
+      "display_name": "Logical Backup Scheduled",
+      "description": "Whether a logical backup (mysqldump or mysqlpump) is scheduled alongside physical backups. Useful for selective restore and version migrations.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Schedule regular mysqldump for logical backup in addition to physical backups",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.4",
+      "subcategory": "backup_dumps",
+      "legacy_name": "restore_tested",
+      "display_name": "Backup Verification",
+      "description": "Whether backups are periodically verified for integrity. Untested backups cannot be relied on for actual recovery.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Implement backup verification process (restore tests on non-production)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.1",
+      "subcategory": "backup_tools",
+      "legacy_name": "enterprise_backup_tool",
+      "display_name": "Enterprise Backup Tool",
+      "description": "Backup tool in use. Enterprise tools (MySQL Enterprise Backup, Percona XtraBackup) provide hot, consistent physical backups with minimal locking.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "mysql-enterprise-backup",
+          "xtrabackup",
+          "mariadb-backup",
+          "mysqlbackup"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Consider implementing Percona XtraBackup for hot physical backups",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.2",
+      "subcategory": "backup_tools",
+      "legacy_name": "pitr_enabled",
+      "display_name": "PITR Capability",
+      "description": "Whether point-in-time recovery via binary logs is available. Without it, recovery is limited to the last full backup.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable binary logging and test PITR procedures using mysqlbinlog",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.3",
+      "subcategory": "backup_tools",
+      "legacy_name": "backup_encryption",
+      "display_name": "Backup Encryption",
+      "description": "Whether backups are encrypted at rest. Required to protect backup files from offline disclosure if storage is compromised.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable backup encryption using MySQL Enterprise Backup or XtraBackup --encrypt",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.4",
+      "subcategory": "backup_tools",
+      "legacy_name": "replica_as_dr",
+      "display_name": "Replica Used for DR",
+      "description": "Whether a replica (ideally a delayed replica) is available as a DR target. Required for fast failover and protection against logical corruption.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure a delayed replica (CHANGE REPLICATION SOURCE ... DELAY = N) for DR",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.1",
+      "subcategory": "backup_recovery",
+      "legacy_name": "rpo_target",
+      "display_name": "RPO Target Defined",
+      "description": "Whether a Recovery Point Objective is documented. Required to size backup frequency and binlog retention against allowed data loss.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "rpo_5",
+          "rpo_15",
+          "rpo_60",
+          "rpo_240",
+          "rpo_1440",
+          "yes"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Define and document RPO target based on business requirements",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.2",
+      "subcategory": "backup_recovery",
+      "legacy_name": "rto_target",
+      "display_name": "RTO Target Defined",
+      "description": "Whether a Recovery Time Objective is documented. Required to choose a recovery strategy that meets allowed downtime.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "rto_5",
+          "rto_15",
+          "rto_60",
+          "rto_240",
+          "rto_480",
+          "rto_1440",
+          "yes"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Define and document RTO target based on business requirements",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.3",
+      "subcategory": "backup_recovery",
+      "legacy_name": "recovery_tested",
+      "display_name": "Restore Tested (90d)",
+      "description": "Whether a restore drill has been performed in the last 90 days. Untested restores routinely surface broken procedures during real incidents.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Schedule regular restore tests (at least quarterly)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.4",
+      "subcategory": "backup_recovery",
+      "legacy_name": "dr_plan_documented",
+      "display_name": "DR Plan Documented",
+      "description": "Whether a disaster recovery plan exists. Required to coordinate response under time pressure when systems are down.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Document disaster recovery procedures and runbooks",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.1",
+      "subcategory": "backup_retention",
+      "legacy_name": "retention_policy",
+      "display_name": "Retention Policy Met",
+      "description": "Whether backup retention covers the organisation's policy window (regulatory, compliance, business). Insufficient retention violates policy.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Configure backup retention to meet compliance requirements",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.2",
+      "subcategory": "backup_retention",
+      "legacy_name": "binlog_retention_adequate",
+      "display_name": "Binlog Retention Adequate",
+      "description": "Whether binary log retention covers the PITR window. Insufficient retention shrinks the recoverable timeframe.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Ensure binlog retention covers required recovery window (binlog_expire_logs_seconds)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.3",
+      "subcategory": "backup_retention",
+      "legacy_name": "offsite_backup",
+      "display_name": "Offsite Backup Copy",
+      "description": "Whether backups are replicated to offsite or separate storage. Required so a primary-site failure does not destroy all recovery copies.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Implement offsite backup copies to S3, Azure Blob, or remote storage",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.1",
+      "subcategory": "security_auth",
+      "legacy_name": "tls_connections_pct",
+      "display_name": "TLS Connections 100%",
+      "description": "Share of client connections using TLS. Must be 100% to prevent in-clear credentials and query traffic on the wire.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 100
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set require_secure_transport = ON and configure clients to use TLS",
+      "cis_reference": "CIS 3.5"
+    },
+    {
+      "metric_id": "SEC-1.2",
+      "subcategory": "security_auth",
+      "legacy_name": "default_authentication_plugin",
+      "display_name": "Strong Default Authentication",
+      "description": "Default authentication plugin (default_authentication_plugin). Required to be a strong algorithm (caching_sha2_password or ed25519); legacy mysql_native_password is weak.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "caching_sha2_password",
+          "ed25519"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": "8.0",
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set default_authentication_plugin = caching_sha2_password in my.cnf",
+      "cis_reference": "CIS 3.1"
+    },
+    {
+      "metric_id": "SEC-1.3",
+      "subcategory": "security_auth",
+      "legacy_name": "password_policy_enabled",
+      "display_name": "Password Policy Enabled",
+      "description": "Password policy enforcement via validate_password. Required to prevent weak passwords; must be at MEDIUM or STRONG.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "MEDIUM",
+          "STRONG"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": "8.0",
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Install validate_password component: INSTALL COMPONENT 'file://component_validate_password'",
+      "cis_reference": "CIS 3.4"
+    },
+    {
+      "metric_id": "SEC-1.4",
+      "subcategory": "security_auth",
+      "legacy_name": "failed_auth_24h",
+      "display_name": "Low Failed Logins (24h)",
+      "description": "Failed login attempts in the last 24h. Spikes can indicate brute-force attempts or misconfigured clients.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 10
+      },
+      "sources": [
+        "zabbix",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate failed login sources and implement connection_control plugin",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.5",
+      "subcategory": "security_auth",
+      "legacy_name": "password_expiry_policy",
+      "display_name": "Password Expiry Policy",
+      "description": "Default password lifetime (default_password_lifetime). Required to enforce periodic password rotation per policy.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 90,
+        "unit": "days"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set default_password_lifetime = 90 in my.cnf",
+      "cis_reference": "CIS 3.6"
+    },
+    {
+      "metric_id": "SEC-2.1",
+      "subcategory": "security_encrypt",
+      "legacy_name": "require_secure_transport",
+      "display_name": "Secure Transport Required",
+      "description": "Whether TLS is enforced for all client connections (require_secure_transport). Without it, plaintext connections are accepted.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set require_secure_transport = ON in my.cnf",
+      "cis_reference": "CIS 3.5"
+    },
+    {
+      "metric_id": "SEC-2.2",
+      "subcategory": "security_encrypt",
+      "legacy_name": "tls_version",
+      "display_name": "TLS 1.2+ Required",
+      "description": "Minimum accepted TLS version (tls_version). Must be 1.2 or higher; older protocols are deprecated and have known vulnerabilities.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "TLSv1.2",
+          "TLSv1.3",
+          "TLSv1.2,TLSv1.3"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set tls_version = 'TLSv1.2,TLSv1.3' in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.3",
+      "subcategory": "security_encrypt",
+      "legacy_name": "innodb_tablespace_encrypt",
+      "display_name": "InnoDB Tablespace Encryption",
+      "description": "Whether InnoDB tablespace encryption (TDE) is on. Required to protect data files at rest from offline disclosure.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": "8.0",
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable InnoDB tablespace encryption: default_table_encryption = ON, configure keyring plugin",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.4",
+      "subcategory": "security_encrypt",
+      "legacy_name": "binlog_encryption",
+      "display_name": "Binlog Encryption",
+      "description": "Whether binary log files are encrypted at rest (binlog_encryption). Required to keep replicated changes confidential on disk.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": "8.0",
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable binary log encryption: binlog_encryption = ON in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.5",
+      "subcategory": "security_encrypt",
+      "legacy_name": "ssl_cert_valid",
+      "display_name": "SSL Certificate Valid",
+      "description": "Days remaining before the SSL certificate expires. Must stay above 30 days to leave room for renewal before client breakage.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 30,
+        "unit": "days"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Renew SSL certificate before expiration (check ssl_ca, ssl_cert system variables)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.1",
+      "subcategory": "security_audit",
+      "legacy_name": "general_log_status",
+      "display_name": "Audit Plugin Enabled",
+      "description": "Whether an audit plugin (MySQL Enterprise Audit or community equivalent) is loaded. Required for compliance audit trails.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Install audit plugin: INSTALL PLUGIN audit_log SONAME 'audit_log.so'",
+      "cis_reference": "CIS 6.2"
+    },
+    {
+      "metric_id": "SEC-3.2",
+      "subcategory": "security_audit",
+      "legacy_name": "slow_query_log",
+      "display_name": "Slow Query Log Enabled",
+      "description": "Whether the slow query log is on. Required for performance analysis and detecting unusual query patterns.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set slow_query_log = ON and long_query_time in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.3",
+      "subcategory": "security_audit",
+      "legacy_name": "error_log_configured",
+      "display_name": "Error Log Configured",
+      "description": "Whether the error log writes to a persistent file (log_error). Required to retain post-mortem evidence beyond the running session.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set log_error to a persistent file path in my.cnf",
+      "cis_reference": "CIS 6.3"
+    },
+    {
+      "metric_id": "SEC-3.4",
+      "subcategory": "security_audit",
+      "legacy_name": "log_raw_disabled",
+      "display_name": "Log Raw Passwords Off",
+      "description": "Whether --log-raw is off. When on, passwords appear in cleartext in the general query log — a serious security risk.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "OFF",
+          "0"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Ensure --log-raw is NOT set in my.cnf (it logs passwords in cleartext)",
+      "cis_reference": "CIS 6.4"
+    },
+    {
+      "metric_id": "SEC-3.5",
+      "subcategory": "security_audit",
+      "legacy_name": "log_retention_days",
+      "display_name": "Log Retention (90d)",
+      "description": "Log retention duration. Must cover the compliance/forensic window (typically 90+ days) so post-incident analysis is possible.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 90,
+        "unit": "days"
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure log rotation to retain logs for compliance period",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-4.1",
+      "subcategory": "security_access",
+      "legacy_name": "root_remote_access",
+      "display_name": "Root Remote Access Blocked",
+      "description": "Whether root accounts are restricted to localhost. Remote root access vastly enlarges the brute-force / lateral-movement surface.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost','127.0.0.1','::1')",
+      "cis_reference": "CIS 4.2"
+    },
+    {
+      "metric_id": "SEC-4.2",
+      "subcategory": "security_access",
+      "legacy_name": "super_priv_count",
+      "display_name": "Limited SUPER Privilege",
+      "description": "Number of accounts holding the SUPER privilege. Must be kept minimal; SUPER bypasses many access controls.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 3
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Revoke SUPER from unnecessary accounts; use granular privileges instead",
+      "cis_reference": "CIS 4.4"
+    },
+    {
+      "metric_id": "SEC-4.3",
+      "subcategory": "security_access",
+      "legacy_name": "anonymous_accounts",
+      "display_name": "No Anonymous Accounts",
+      "description": "Number of anonymous (empty-username) accounts. Any are unsafe — they let unauthenticated clients connect.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "DROP USER ''@'localhost'; DROP USER ''@'%';",
+      "cis_reference": "CIS 4.1"
+    },
+    {
+      "metric_id": "SEC-4.4",
+      "subcategory": "security_access",
+      "legacy_name": "wildcard_host_accounts",
+      "display_name": "No Wildcard Host Accounts",
+      "description": "Accounts with wildcard '%' host and broad privileges. Must be eliminated; wildcard hosts allow connections from any source IP.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Restrict user accounts to specific hosts rather than '%' wildcard",
+      "cis_reference": "CIS 4.5"
+    },
+    {
+      "metric_id": "SEC-4.5",
+      "subcategory": "security_access",
+      "legacy_name": "grant_privilege_check",
+      "display_name": "GRANT OPTION Minimal",
+      "description": "Number of accounts holding GRANT OPTION. Must be kept minimal; the privilege lets a user delegate any of its rights to others.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 2
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Revoke GRANT OPTION from accounts that do not need to delegate privileges",
+      "cis_reference": "CIS 4.3"
+    },
+    {
+      "metric_id": "CAP-1.1",
+      "subcategory": "capacity_storage",
+      "legacy_name": "disk_usage_pct",
+      "display_name": "Disk Usage < 85%",
+      "description": "Data directory disk usage. Must stay under 85%; a full data volume halts MySQL writes.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 85
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Add disk capacity or archive/purge old data",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.2",
+      "subcategory": "capacity_storage",
+      "legacy_name": "innodb_data_file_growth",
+      "display_name": "InnoDB Tablespace Growth Healthy",
+      "description": "Projected days until InnoDB shared tablespace or data files fill the volume. Short horizons require capacity planning.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 180,
+        "unit": "days_to_full"
+      },
+      "sources": [
+        "zabbix",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Plan capacity expansion or implement data lifecycle management",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.3",
+      "subcategory": "capacity_storage",
+      "legacy_name": "table_file_fragmentation",
+      "display_name": "Table Fragmentation Low",
+      "description": "Free-space ratio inside table files (fragmentation). High values waste storage and slow scans; OPTIMIZE TABLE reclaims space.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 20,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Run OPTIMIZE TABLE or ALTER TABLE ... ENGINE=InnoDB to reclaim space",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.4",
+      "subcategory": "capacity_storage",
+      "legacy_name": "innodb_redo_log_size",
+      "display_name": "Redo Log Sized Adequately",
+      "description": "InnoDB redo log capacity (innodb_log_file_size or innodb_redo_log_capacity). Must be sized for write throughput to avoid checkpoint stalls.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Tune innodb_log_file_size (or innodb_redo_log_capacity in MySQL 8.0.30+)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.5",
+      "subcategory": "capacity_storage",
+      "legacy_name": "data_dir_size",
+      "display_name": "Data Directory Monitored",
+      "description": "Whether data directory size is being tracked. Required as input to capacity planning and growth forecasting.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "zabbix",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Configure monitoring for MySQL data directory size growth",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.1",
+      "subcategory": "capacity_connections",
+      "legacy_name": "connection_usage_pct",
+      "display_name": "Connection Usage < 80%",
+      "description": "Active connections vs max_connections. Sustained use above 80% leaves no headroom for spikes and risks 'too many connections' errors.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 80
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase max_connections or implement connection pooling (ProxySQL)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.2",
+      "subcategory": "perf_cache",
+      "legacy_name": "thread_cache_hit_rate",
+      "display_name": "Thread Cache Effective",
+      "description": "Thread cache effectiveness (Threads_created vs Connections). Low hit rates indicate frequent thread creation overhead — a performance / caching concern. Moved from capacity_connections in v1.3.0 per docs/guides/metric-placement-review.md §2A.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 90
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase thread_cache_size to reduce thread creation overhead",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.3",
+      "subcategory": "capacity_connections",
+      "legacy_name": "connection_pooling",
+      "display_name": "Connection Pooling Used",
+      "description": "Whether a connection pooler (ProxySQL or MySQL Router) is in front of the server. Required to absorb spikes and amortise connection cost.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Implement ProxySQL for connection pooling and query routing",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.4",
+      "subcategory": "capacity_connections",
+      "legacy_name": "aborted_connections",
+      "display_name": "Low Aborted Connections",
+      "description": "Share of aborted connections vs total. Sustained values above 1% indicate timeouts, oversized packets, or auth issues.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 1,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Investigate aborted connections: check max_allowed_packet, wait_timeout, net_read_timeout",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.5",
+      "subcategory": "capacity_connections",
+      "legacy_name": "max_used_connections",
+      "display_name": "Peak Connection Headroom",
+      "description": "Headroom between peak connections (Max_used_connections) and max_connections. Must keep at least 20% spare to absorb spikes.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 80
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Review Max_used_connections vs max_connections; resize or implement pooling",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.1",
+      "subcategory": "perf_cache",
+      "legacy_name": "innodb_buffer_pool_hit_rate",
+      "display_name": "InnoDB Buffer Pool Hit Ratio Healthy",
+      "description": "InnoDB buffer pool hit ratio. Low values force disk reads and degrade query latency; healthy values depend on workload type — OLTP workloads should sit near 99%, OLAP workloads with working sets larger than RAM operate healthily lower. Moved from capacity_maintenance in v1.3.0 per docs/guides/metric-placement-review.md §2A.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "min": 99 },
+          "oltp":    { "min": 98 },
+          "olap":    { "min": 85 },
+          "mixed":   { "min": 99 }
+        }
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase innodb_buffer_pool_size (target 70-80% of available RAM)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.2",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "purge_lag",
+      "display_name": "InnoDB Purge Lag Healthy",
+      "description": "InnoDB undo history list length (purge lag, in rows). Sustained high values indicate long-running transactions blocking purge and bloating undo; write-heavy OLTP workloads naturally accumulate more undo than read-heavy or analytical workloads.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "max": 1000000 },
+          "oltp":    { "max": 5000000 },
+          "olap":    { "max": 100000 },
+          "mixed":   { "max": 1000000 }
+        }
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate long-running transactions causing purge lag; check innodb_max_purge_lag",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.3",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "optimize_table_needed",
+      "display_name": "Tables Not Needing OPTIMIZE",
+      "description": "Tables with high free-space fragmentation (>30%). High counts indicate OPTIMIZE TABLE is overdue and disk usage is inflated.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Run OPTIMIZE TABLE for heavily fragmented tables during maintenance window",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.4",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "analyze_table_needed",
+      "display_name": "Statistics Up to Date",
+      "description": "Whether table statistics are recent. Stale stats lead the optimizer to choose poor execution plans.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Run ANALYZE TABLE on tables with stale statistics; enable innodb_stats_auto_recalc",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.5",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "event_scheduler",
+      "display_name": "Event Scheduler Status",
+      "description": "Whether the event_scheduler is on. Required if maintenance events (scheduled cleanup, stats refresh) are defined in the database.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set event_scheduler = ON if using MySQL events for maintenance tasks",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.6",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "innodb_buffer_pool_instances",
+      "display_name": "Buffer Pool Instances Tuned",
+      "description": "Buffer pool partitioning (innodb_buffer_pool_instances). Must be sized to pool capacity to reduce contention; rule of thumb 1 per GB up to 8-16.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set innodb_buffer_pool_instances = 1 per GB of buffer pool (max 8-16)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.1",
+      "subcategory": "capacity_planning",
+      "legacy_name": "auto_increment_proximity",
+      "display_name": "Auto-Increment Headroom",
+      "description": "Headroom on AUTO_INCREMENT columns vs the column's max value. Approaching the limit risks INSERT failures with no headroom left.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 80,
+        "unit": "percent_used"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Alter column to BIGINT UNSIGNED before reaching INT/BIGINT limit",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.2",
+      "subcategory": "capacity_planning",
+      "legacy_name": "disk_space_projection",
+      "display_name": "Disk Space Projection",
+      "description": "Projected days until the data volume fills based on growth trend. Must stay above 180 days to leave time for capacity expansion.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 180,
+        "unit": "days"
+      },
+      "sources": [
+        "zabbix",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Plan storage expansion or data archival strategy",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.3",
+      "subcategory": "capacity_planning",
+      "legacy_name": "capacity_review",
+      "display_name": "Capacity Review",
+      "description": "Whether capacity reviews happen at least quarterly. Required to catch growth trends before they cause incidents.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Establish a regular capacity review process",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.4",
+      "subcategory": "capacity_planning",
+      "legacy_name": "partitioning_used",
+      "display_name": "Partitioning for Large Tables",
+      "description": "Whether very large tables use partitioning. Partitioning helps with maintenance windows, archival, and query pruning on huge datasets.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Consider partitioning tables exceeding 100M rows for easier maintenance",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.1",
+      "subcategory": "perf_cache",
+      "legacy_name": "buffer_pool_hit_ratio",
+      "display_name": "Buffer Pool Read Hit Rate Healthy",
+      "description": "InnoDB buffer pool read hit rate. Low rates push load to disk; healthy values depend on workload type — OLTP workloads should sit near 99%, OLAP workloads with working sets larger than RAM operate healthily lower.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "min": 99 },
+          "oltp":    { "min": 98 },
+          "olap":    { "min": 85 },
+          "mixed":   { "min": 99 }
+        }
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase innodb_buffer_pool_size; target 70-80% of total RAM",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.2",
+      "subcategory": "perf_cache",
+      "legacy_name": "query_cache_deprecated",
+      "display_name": "Query Cache Removed (8.0)",
+      "description": "Whether the legacy query cache is still in use. The query cache is removed in MySQL 8.0; keeping it on a 5.7 server hurts scalability.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": "8.0",
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Query cache was removed in MySQL 8.0; use ProxySQL or application-level caching",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.3",
+      "subcategory": "perf_cache",
+      "legacy_name": "key_buffer_size",
+      "display_name": "Key Buffer Minimal (InnoDB)",
+      "description": "MyISAM key cache size (key_buffer_size). On InnoDB-only deployments it should be kept minimal so RAM goes to the buffer pool instead.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Reduce key_buffer_size to ~8M if not using MyISAM tables",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.4",
+      "subcategory": "perf_cache",
+      "legacy_name": "table_open_cache_hit",
+      "display_name": "Table Open Cache Effective",
+      "description": "Table open cache hit ratio. Should stay above 90%; below that, table_open_cache likely needs to grow.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 90
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Increase table_open_cache if Opened_tables/Uptime ratio is high",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.5",
+      "subcategory": "perf_cache",
+      "legacy_name": "sort_buffer_size",
+      "display_name": "Sort Buffer Size Tuned",
+      "description": "Per-session sort buffer size (sort_buffer_size). Should sit in the 256K-4M range; oversized values inflate per-connection memory.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Tune sort_buffer_size based on workload; avoid setting too large (per-session allocation)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.1",
+      "subcategory": "perf_queries",
+      "legacy_name": "performance_schema",
+      "display_name": "Performance Schema Enabled",
+      "description": "Whether performance_schema is on. Required for query analysis, slow-query attribution, and most observability tooling.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set performance_schema = ON in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.2",
+      "subcategory": "perf_queries",
+      "legacy_name": "slow_query_log_perf",
+      "display_name": "Slow Query Log Active",
+      "description": "Whether the slow query log is on. Required to identify problematic queries beyond a configured duration threshold.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set slow_query_log = ON in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.3",
+      "subcategory": "perf_queries",
+      "legacy_name": "long_query_time",
+      "display_name": "Long Query Time Threshold",
+      "description": "Slow query duration threshold (long_query_time). A value of 1 second or less is required to capture slow queries effectively.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 1,
+        "unit": "seconds"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set long_query_time = 1 (or lower) in my.cnf to capture slow queries",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.4",
+      "subcategory": "perf_queries",
+      "legacy_name": "log_queries_not_using_indexes",
+      "display_name": "Log Full Scans Enabled",
+      "description": "Whether queries without indexes are logged (log_queries_not_using_indexes). Required to catch full-scan regressions.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set log_queries_not_using_indexes = ON in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.5",
+      "subcategory": "perf_queries",
+      "legacy_name": "top_queries_analyzed",
+      "display_name": "Top Queries Reviewed",
+      "description": "Whether top-cost queries from Performance Schema are reviewed periodically. Required to keep optimisation effort focused on real workload.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Review performance_schema.events_statements_summary_by_digest regularly",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.6",
+      "subcategory": "perf_queries",
+      "legacy_name": "full_table_scan_rate",
+      "display_name": "Full Table Scan Rate Healthy",
+      "description": "Share of queries doing full table scans. Sustained high rates indicate missing indexes or non-sargable predicates; analytical (OLAP) workloads naturally generate more scans than OLTP, where indexes should cover most access patterns.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "max": 10 },
+          "oltp":    { "max": 5 },
+          "olap":    { "max": 15 },
+          "mixed":   { "max": 10 }
+        },
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Add indexes to eliminate full table scans; use EXPLAIN to identify queries",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.7",
+      "subcategory": "perf_queries",
+      "legacy_name": "filesort_rate",
+      "display_name": "Low Filesort Rate",
+      "description": "Rate of disk-spilled filesorts (Sort_merge_passes). High rates indicate ORDER BY/GROUP BY without supporting indexes or undersized sort_buffer_size.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 5,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Add indexes to ORDER BY / GROUP BY columns; increase sort_buffer_size",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.1",
+      "subcategory": "perf_locks",
+      "legacy_name": "innodb_row_lock_waits",
+      "display_name": "InnoDB Lock Waits Healthy",
+      "description": "InnoDB row-lock wait count. Sustained high counts indicate transaction contention; write-heavy OLTP workloads tolerate more row-lock waits than read-heavy or analytical workloads.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "max": 10 },
+          "oltp":    { "max": 20 },
+          "olap":    { "max": 5 },
+          "mixed":   { "max": 10 }
+        }
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate blocking queries via performance_schema.data_locks; optimize transactions",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.2",
+      "subcategory": "perf_locks",
+      "legacy_name": "innodb_deadlocks",
+      "display_name": "Deadlocks Minimal",
+      "description": "InnoDB deadlock count. Sustained deadlocks indicate inconsistent transaction order or hot-row contention in the application.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 5
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable innodb_print_all_deadlocks = ON; review application transaction order",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.3",
+      "subcategory": "perf_locks",
+      "legacy_name": "metadata_lock_waits",
+      "display_name": "Metadata Lock Contention Healthy",
+      "description": "Metadata-lock waits affecting DDL. Sustained waits mean schema changes are blocked behind long-running transactions; high-concurrency OLTP environments should tolerate near-zero waits because a single waiting DDL stalls all dependent sessions.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "max": 5 },
+          "oltp":    { "max": 2 },
+          "olap":    { "max": 5 },
+          "mixed":   { "max": 5 }
+        }
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Check performance_schema.metadata_locks; ensure DDLs run when no long transactions are open",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.4",
+      "subcategory": "perf_locks",
+      "legacy_name": "table_lock_contention",
+      "display_name": "Table Lock Contention Low",
+      "description": "Share of statements waiting on table-level locks. Sustained values above 5% point to MyISAM tables or coarse-locking patterns.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 5,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Migrate MyISAM tables to InnoDB; InnoDB uses row-level locking",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.1",
+      "subcategory": "perf_replication",
+      "legacy_name": "replica_lag",
+      "display_name": "Replica Lag < 30s",
+      "description": "Replica lag (Seconds_Behind_Source). Must stay under 30 seconds for read scaling and timely failover; sustained lag widens the data loss window.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 30,
+        "unit": "seconds"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Investigate replica SQL thread lag; consider parallel replication (replica_parallel_workers)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.2",
+      "subcategory": "perf_replication",
+      "legacy_name": "replica_sql_thread_running",
+      "display_name": "Replica SQL Thread Running",
+      "description": "Whether the replica SQL thread is applying events. If stopped, replication has stalled and the replica falls behind the source.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "Yes"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Check SHOW REPLICA STATUS; investigate and restart replica SQL thread",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.3",
+      "subcategory": "perf_replication",
+      "legacy_name": "replica_io_thread_running",
+      "display_name": "Replica IO Thread Running",
+      "description": "Whether the replica IO thread is connected to the source and pulling binlog events. If stopped, no new events reach the replica.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "Yes"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Check network connectivity to source; review replica error log",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.4",
+      "subcategory": "perf_replication",
+      "legacy_name": "gtid_consistency",
+      "display_name": "GTID Consistency Maintained",
+      "description": "Whether the replica has only GTIDs originating from the source. Errant transactions on the replica break safe failover.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Investigate errant transactions using GTID_SUBTRACT(); use pt-table-checksum",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.1",
+      "subcategory": "future_version",
+      "legacy_name": "db_version",
+      "display_name": "Version Detected",
+      "description": "Whether the MySQL/MariaDB server version was successfully read. Required as the input for EOL and minor-version checks.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Upgrade to MySQL 8.4 LTS (current LTS) or MySQL 9.x (Innovation)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.2",
+      "subcategory": "future_version",
+      "legacy_name": "mysql_minor_patched",
+      "display_name": "Latest Minor Version Applied",
+      "description": "Whether the server is on the latest minor/patch release within its major version. Falling behind misses bug and security fixes.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Apply latest MySQL patch release for bug fixes and security patches",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.3",
+      "subcategory": "future_version",
+      "legacy_name": "version_eol_status",
+      "display_name": "Version Not End-of-Life",
+      "description": "Whether the running MySQL/MariaDB version is still under vendor support. EOL versions no longer receive security patches.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "supported"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Upgrade from EOL MySQL version; consult Oracle MySQL lifecycle page",
+      "cis_reference": null,
+      "gate_scope": "pillar"
+    },
+    {
+      "metric_id": "FUT-1.4",
+      "subcategory": "future_version",
+      "legacy_name": "innodb_only",
+      "display_name": "InnoDB Storage Engine Used",
+      "description": "Tables on engines other than InnoDB. MyISAM/MEMORY lack crash recovery and row-level locking and should not hold persistent data.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Convert MyISAM tables to InnoDB: ALTER TABLE t ENGINE = InnoDB",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.5",
+      "subcategory": "future_version",
+      "legacy_name": "mysql_lts_channel",
+      "display_name": "LTS Release Track",
+      "description": "Whether the server is on the LTS release track (8.4.x or next LTS). LTS gets longer support and fewer breaking changes than Innovation.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Consider MySQL 8.4 LTS over Innovation releases for production stability",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-2.1",
+      "subcategory": "future_config",
+      "legacy_name": "innodb_cluster_or_group_replication",
+      "display_name": "HA Solution Deployed",
+      "description": "Whether a high-availability solution (InnoDB Cluster, Group Replication, or ProxySQL+replication) is in use. Required to survive node failures without downtime.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Implement InnoDB Cluster or Group Replication for automatic failover",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-2.2",
+      "subcategory": "future_config",
+      "legacy_name": "proxysql_router_configured",
+      "display_name": "ProxySQL/MySQL Router Used",
+      "description": "Whether ProxySQL or MySQL Router fronts the cluster. Required for transparent failover and read/write split without app-side wiring.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Deploy ProxySQL for connection pooling, query routing, and failover transparency",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-2.3",
+      "subcategory": "future_config",
+      "legacy_name": "innodb_strict_mode",
+      "display_name": "InnoDB Strict Mode",
+      "description": "Whether innodb_strict_mode is on. Required to surface invalid CREATE/ALTER options as errors instead of silent truncation.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set innodb_strict_mode = ON in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.1",
+      "subcategory": "future_planning",
+      "legacy_name": "upgrade_plan",
+      "display_name": "Upgrade Plan Documented",
+      "description": "Whether a database version upgrade plan exists. Required to keep ahead of EOL and avoid emergency upgrades under pressure.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Document upgrade path and schedule before current version approaches EOL",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.2",
+      "subcategory": "future_planning",
+      "legacy_name": "deprecated_mysql_native_password",
+      "display_name": "mysql_native_password Not Used",
+      "description": "Accounts using the deprecated mysql_native_password plugin. Must be migrated to caching_sha2_password for forward compatibility.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": "8.0",
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Migrate accounts to caching_sha2_password: ALTER USER x IDENTIFIED WITH caching_sha2_password",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.3",
+      "subcategory": "future_planning",
+      "legacy_name": "sql_mode",
+      "display_name": "SQL Mode Configured",
+      "description": "Server SQL mode (sql_mode). Must include STRICT_TRANS_TABLES to surface invalid values as errors instead of silent coercion.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Add STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION to sql_mode in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.4",
+      "subcategory": "future_planning",
+      "legacy_name": "deprecated_features_check",
+      "display_name": "No Deprecated Features",
+      "description": "Deprecated MySQL functions or syntax in stored routines. Must be cleaned up before upgrading to a major version that removes them.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Run MySQL upgrade checker: mysqlcheck --check-upgrade or mysqlsh util.checkForServerUpgrade()",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.5",
+      "subcategory": "future_planning",
+      "legacy_name": "myisam_tables_count",
+      "display_name": "No MyISAM User Tables",
+      "description": "User-data tables on the MyISAM engine. Must be migrated to InnoDB for crash recovery, row-level locking, and forward compatibility.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Convert MyISAM tables to InnoDB for crash recovery and row-level locking",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.6",
+      "subcategory": "future_planning",
+      "legacy_name": "character_set_utf8mb4",
+      "display_name": "utf8mb4 Character Set",
+      "description": "Server/table character set. Must be utf8mb4; utf8mb3 is deprecated and cannot represent the full Unicode range (e.g. emoji).",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Migrate tables from utf8mb3 to utf8mb4; set character_set_server = utf8mb4",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.1",
+      "subcategory": "future_foundation",
+      "legacy_name": "monitoring_connected",
+      "display_name": "Monitoring Connected",
+      "description": "Whether the instance is wired to a monitoring system (PMM, Zabbix, etc.). Required to detect issues before they cause downtime.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Connect MySQL to Percona Monitoring and Management (PMM) or Zabbix",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.2",
+      "subcategory": "future_foundation",
+      "legacy_name": "alerting_configured",
+      "display_name": "Alerting Configured",
+      "description": "Whether alerts exist for critical MySQL metrics (replication lag, connection saturation, disk usage). Required for incident response.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Configure alerts for replication lag, connection saturation, disk usage",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.3",
+      "subcategory": "future_foundation",
+      "legacy_name": "slow_query_analysis",
+      "display_name": "Slow Query Analysis",
+      "description": "Whether the slow query log is analysed regularly (pt-query-digest, MySQL Workbench, etc.). Required to surface and act on offending queries.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Use pt-query-digest or MySQL Workbench to analyze slow query log periodically",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.4",
+      "subcategory": "future_foundation",
+      "legacy_name": "change_management",
+      "display_name": "Change Management Process",
+      "description": "Whether schema and configuration changes follow a controlled change-management process. Required to catch regressions before they reach production.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Implement schema migration tooling (Liquibase, Flyway) and change approval process",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.6",
+      "subcategory": "security_encrypt",
+      "legacy_name": "have_ssl",
+      "display_name": "SSL Available",
+      "description": "Whether SSL/TLS support is compiled into the server (have_ssl). Without it, encrypted connections are not possible regardless of client config.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "YES"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Ensure MySQL is compiled with SSL support and ssl-ca/ssl-cert/ssl-key are configured",
+      "cis_reference": "CIS 4.3"
+    },
+    {
+      "metric_id": "SEC-3.6",
+      "subcategory": "security_audit",
+      "legacy_name": "server_audit_logging",
+      "display_name": "Audit Logging Enabled",
+      "description": "Whether a server audit plugin (MariaDB Audit or MySQL Enterprise Audit) is loaded. Required for compliance audit trails.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable audit logging: INSTALL PLUGIN server_audit SONAME \"server_audit\" (MariaDB) or audit_log (MySQL Enterprise)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.7",
+      "subcategory": "capacity_storage",
+      "legacy_name": "innodb_buffer_pool_size",
+      "display_name": "Buffer Pool Size Configured",
+      "description": "InnoDB buffer pool size (innodb_buffer_pool_size). Must be sized for the working set; rule of thumb is 70-80% of available RAM on dedicated servers.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set innodb_buffer_pool_size to 70-80% of available RAM for dedicated database servers",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.6",
+      "subcategory": "capacity_storage",
+      "legacy_name": "total_data_size_bytes",
+      "display_name": "Total Data Size Tracked",
+      "description": "Whether total database data size (DATA_LENGTH + INDEX_LENGTH) has been measured. Required as input to capacity planning.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Monitor total data size growth trends for capacity planning",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.8",
+      "subcategory": "perf_queries",
+      "legacy_name": "com_select",
+      "display_name": "Query Throughput Tracked",
+      "description": "Whether SELECT query throughput (Com_select) is being captured. Required as a baseline for trend and anomaly detection.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable Performance Schema and monitor Com_select counter for throughput trends",
+      "cis_reference": null
+    }
+  ],
+  "consistency_rules": []
+}

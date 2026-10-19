@@ -1,0 +1,31 @@
+# Node
+node_modules/
+simulator/node_modules/
+
+# Test coverage
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# npm
+*.tgz
+.npm/
+
+# Logs
+*.log
+npm-debug.log*

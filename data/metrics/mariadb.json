@@ -1,0 +1,2865 @@
+{
+  "version": "1.3.1",
+  "maturity": "draft",
+  "description": "MariaDB 11.4 LTS health metric catalog. Derived from dbi services scoring framework. Technology-specific implementation of the universal pillar/subcategory structure. Metric semantics validated against MariaDB 11.4 LTS and 11.7 / 11.8 rolling releases. MariaDB-specific features: Galera Cluster, built-in thread pool, Aria engine, system versioning, ed25519 auth, file_key_management TDE.",
+  "release_notes": "v1.3.1 (2026-09-23): catalog maturity label added (draft: not yet reviewed by a technology leader, neither for collection nor for scoring). No metric, threshold, weight or rule change. v1.3.0 (PoC): seven hot metrics refactored to use scoring-core v1.5.0 profile-keyed thresholds, plus two long-flagged placement moves applied. Affected metrics: CAP-3.2 (purge_lag profile-keyed), PERF-3.1 (innodb_row_lock_waits profile-keyed), PERF-1.1 (buffer_pool_hit_ratio profile-keyed), CAP-3.1 (innodb_buffer_pool_hit_rate MOVED to perf_cache + profile-keyed), CAP-2.5 (thread_cache_hit_rate MOVED to perf_cache), PERF-2.6 (full_table_scan_rate profile-keyed), PERF-3.3 (metadata_lock_waits profile-keyed). v1.2.0: schema-ready for consistency_rules (rules deferred to Technology Leader work). v1.1.0: Subcategory point allocations within Capacity, Performance, and Future-Proofing pillars differ from the architecture specification (SCORING_SYSTEM_ARCHITECTURE.md section 2.3). These splits have been stable since v1.0.0 and are flagged for tech-leader review. See docs/guides/metric-placement-review.md for details.",
+  "technology": "mariadb",
+  "technology_version": "11.4",
+  "pillars": {
+    "backup": {
+      "name": "Backup & Recovery",
+      "maxPoints": 20,
+      "order": 1,
+      "icon": "shield"
+    },
+    "security": {
+      "name": "Security",
+      "maxPoints": 20,
+      "order": 2,
+      "icon": "lock"
+    },
+    "capacity": {
+      "name": "Capacity",
+      "maxPoints": 20,
+      "order": 3,
+      "icon": "chart-bar"
+    },
+    "performance": {
+      "name": "Performance",
+      "maxPoints": 20,
+      "order": 4,
+      "icon": "lightning"
+    },
+    "futureproof": {
+      "name": "Future-Proofing",
+      "maxPoints": 20,
+      "order": 5,
+      "icon": "rocket"
+    }
+  },
+  "subcategories": {
+    "backup_wal": {
+      "pillar": "backup",
+      "name": "Log Archiving",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "backup_dumps": {
+      "pillar": "backup",
+      "name": "Scheduled Backups",
+      "maxPoints": 4,
+      "order": 2
+    },
+    "backup_tools": {
+      "pillar": "backup",
+      "name": "Backup Tools",
+      "maxPoints": 4,
+      "order": 3
+    },
+    "backup_recovery": {
+      "pillar": "backup",
+      "name": "Recovery Readiness",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "backup_retention": {
+      "pillar": "backup",
+      "name": "Retention Compliance",
+      "maxPoints": 3,
+      "order": 5
+    },
+    "security_auth": {
+      "pillar": "security",
+      "name": "Authentication",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "security_encrypt": {
+      "pillar": "security",
+      "name": "Encryption",
+      "maxPoints": 5,
+      "order": 2
+    },
+    "security_audit": {
+      "pillar": "security",
+      "name": "Audit & Logging",
+      "maxPoints": 5,
+      "order": 3
+    },
+    "security_access": {
+      "pillar": "security",
+      "name": "Access Control",
+      "maxPoints": 5,
+      "order": 4
+    },
+    "capacity_storage": {
+      "pillar": "capacity",
+      "name": "Storage",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "capacity_connections": {
+      "pillar": "capacity",
+      "name": "Connections",
+      "maxPoints": 5,
+      "order": 2
+    },
+    "capacity_maintenance": {
+      "pillar": "capacity",
+      "name": "Maintenance",
+      "maxPoints": 6,
+      "order": 3
+    },
+    "capacity_planning": {
+      "pillar": "capacity",
+      "name": "Planning",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "perf_cache": {
+      "pillar": "performance",
+      "name": "Caching",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "perf_queries": {
+      "pillar": "performance",
+      "name": "Query Performance",
+      "maxPoints": 7,
+      "order": 2
+    },
+    "perf_locks": {
+      "pillar": "performance",
+      "name": "Locking",
+      "maxPoints": 4,
+      "order": 3
+    },
+    "perf_replication": {
+      "pillar": "performance",
+      "name": "Replication",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "future_version": {
+      "pillar": "futureproof",
+      "name": "Version Currency",
+      "maxPoints": 7,
+      "order": 1
+    },
+    "future_config": {
+      "pillar": "futureproof",
+      "name": "Configuration",
+      "maxPoints": 3,
+      "order": 2
+    },
+    "future_planning": {
+      "pillar": "futureproof",
+      "name": "Upgrade Planning",
+      "maxPoints": 6,
+      "order": 3
+    },
+    "future_foundation": {
+      "pillar": "futureproof",
+      "name": "Health Foundation",
+      "maxPoints": 4,
+      "order": 4
+    }
+  },
+  "metrics": [
+    {
+      "metric_id": "BAK-1.1",
+      "subcategory": "backup_wal",
+      "legacy_name": "log_bin",
+      "display_name": "Binary Log Enabled",
+      "description": "Whether the MariaDB binary log (log_bin) is on. Required for point-in-time recovery and replication.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable binary logging: log_bin = /var/lib/mysql/mysql-bin in my.cnf",
+      "cis_reference": null,
+      "gate_scope": "pillar"
+    },
+    {
+      "metric_id": "BAK-1.2",
+      "subcategory": "backup_wal",
+      "legacy_name": "binlog_format",
+      "display_name": "Binlog Format ROW",
+      "description": "Whether the binary log format (binlog_format) is ROW. Required for reliable replication and PITR.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ROW"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set binlog_format = ROW in my.cnf for reliable replication and PITR",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.3",
+      "subcategory": "backup_wal",
+      "legacy_name": "binlog_expire_logs_seconds",
+      "display_name": "Binary Log Expire Configured",
+      "description": "Binary log retention window (binlog_expire_logs_seconds). Should fall in the 1-30 day range to support PITR without exhausting disk.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 86400,
+        "max": 2592000
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set expire_logs_days = 7 (or binlog_expire_logs_seconds) in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.4",
+      "subcategory": "backup_wal",
+      "legacy_name": "gtid_mode",
+      "display_name": "GTID Mode Enabled",
+      "description": "Whether MariaDB GTID mode is on (gtid_slave_pos or gtid_current_pos). Required for reliable replication and PITR.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "slave_pos",
+          "current_pos"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "10.0",
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable GTID: set gtid_strict_mode = ON and use gtid_current_pos or gtid_slave_pos",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.5",
+      "subcategory": "backup_wal",
+      "legacy_name": "sync_binlog",
+      "display_name": "Binlog Sync Durable",
+      "description": "Whether the binary log is flushed per transaction (sync_binlog=1). Required to avoid losing committed transactions on crash.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set sync_binlog = 1 in my.cnf for crash-safe binary logging",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.1",
+      "subcategory": "backup_dumps",
+      "legacy_name": "dump_schedule",
+      "display_name": "Backup Schedule Defined",
+      "description": "Whether a regular backup cadence (daily, hourly, continuous, or binlog-only) is in place. Required to keep RPO bounded.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "daily",
+          "hourly",
+          "continuous",
+          "binlog_only"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Document and implement a backup schedule (daily recommended)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.2",
+      "subcategory": "backup_dumps",
+      "legacy_name": "last_backup_age_hours",
+      "display_name": "Last Backup Age",
+      "description": "Age of the most recent successful backup. Stale backups widen the worst-case data-loss window.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 24,
+        "unit": "hours"
+      },
+      "sources": [
+        "zabbix",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Verify backup jobs are running and completing successfully",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.3",
+      "subcategory": "backup_dumps",
+      "legacy_name": "mariadb_dump_schedule",
+      "display_name": "Logical Backup Scheduled",
+      "description": "Whether a logical backup (mariadb-dump or mariadb-backup) runs on a schedule. Complements physical backups for portability and partial restores.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Schedule regular mariadb-dump for logical backup in addition to physical backups",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.4",
+      "subcategory": "backup_dumps",
+      "legacy_name": "restore_tested",
+      "display_name": "Backup Verification",
+      "description": "Whether backups are periodically verified for integrity. Untested backups risk silent corruption discovered only at recovery time.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Implement backup verification process (restore tests on non-production)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.1",
+      "subcategory": "backup_tools",
+      "legacy_name": "mariadb_backup_tool",
+      "display_name": "mariadb-backup Used",
+      "description": "Whether mariadb-backup (or compatible XtraBackup fork) is used for hot physical backups. Required for online consistent backups of InnoDB.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "mariadb-backup",
+          "xtrabackup",
+          "mariadb_backup"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Install mariadb-backup for consistent online physical backups (replaces XtraBackup for MariaDB)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.2",
+      "subcategory": "backup_tools",
+      "legacy_name": "pitr_enabled",
+      "display_name": "PITR Capability",
+      "description": "Whether point-in-time recovery via binary logs is available. Without it, recovery is limited to the most recent full backup.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable binary logging and test PITR procedures using mariadb-binlog",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.3",
+      "subcategory": "backup_tools",
+      "legacy_name": "backup_encryption",
+      "display_name": "Backup Encryption",
+      "description": "Whether backup files are encrypted at rest. Required to protect data leaks via stolen or misplaced backup media.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable backup encryption using mariadb-backup --encrypt or encrypted storage",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.4",
+      "subcategory": "backup_tools",
+      "legacy_name": "replica_as_dr",
+      "display_name": "Replica Used for DR",
+      "description": "Whether a replica (ideally a delayed one) exists as a DR target. Provides a fast failover and protection against logical corruption.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure a delayed replica (CHANGE MASTER TO ... MASTER_DELAY = N) for DR",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.1",
+      "subcategory": "backup_recovery",
+      "legacy_name": "rpo_target",
+      "display_name": "RPO Target Defined",
+      "description": "Whether a Recovery Point Objective (RPO) target is documented. Without an RPO target, backup cadence cannot be evaluated against business need.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "rpo_5",
+          "rpo_15",
+          "rpo_60",
+          "rpo_240",
+          "rpo_1440",
+          "yes"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Define and document RPO target based on business requirements",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.2",
+      "subcategory": "backup_recovery",
+      "legacy_name": "rto_target",
+      "display_name": "RTO Target Defined",
+      "description": "Whether a Recovery Time Objective (RTO) target is documented. Without an RTO target, recovery tooling and HA design cannot be sized.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "rto_5",
+          "rto_15",
+          "rto_60",
+          "rto_240",
+          "rto_480",
+          "rto_1440",
+          "yes"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Define and document RTO target based on business requirements",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.3",
+      "subcategory": "backup_recovery",
+      "legacy_name": "recovery_tested",
+      "display_name": "Restore Tested (90d)",
+      "description": "Whether a restore drill has been performed within the last 90 days. Untested restore procedures are a top cause of failed recoveries.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Schedule regular restore tests (at least quarterly)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.4",
+      "subcategory": "backup_recovery",
+      "legacy_name": "dr_plan_documented",
+      "display_name": "DR Plan Documented",
+      "description": "Whether a disaster recovery plan and runbook exist. Required to coordinate response under time pressure during an incident.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Document disaster recovery procedures and runbooks",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.1",
+      "subcategory": "backup_retention",
+      "legacy_name": "retention_policy",
+      "display_name": "Retention Policy Met",
+      "description": "Whether backup retention duration matches organizational and regulatory policy. Short retention can defeat compliance and forensic recovery.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Configure backup retention to meet compliance requirements",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.2",
+      "subcategory": "backup_retention",
+      "legacy_name": "binlog_retention_adequate",
+      "display_name": "Binlog Retention Adequate",
+      "description": "Whether binary log retention covers the required PITR window. If logs expire too early, recovery to a recent point becomes impossible.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Ensure expire_logs_days covers required recovery window",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.3",
+      "subcategory": "backup_retention",
+      "legacy_name": "offsite_backup",
+      "display_name": "Offsite Backup Copy",
+      "description": "Whether backups exist on offsite or independent storage. Local-only backups are lost together with the primary in a site disaster.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Implement offsite backup copies to S3, Azure Blob, or remote storage",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.1",
+      "subcategory": "security_auth",
+      "legacy_name": "tls_connections_pct",
+      "display_name": "TLS Connections 100%",
+      "description": "Share of client connections using TLS encryption. Cleartext connections expose credentials and payloads on the network.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 100
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set require_secure_transport = ON in my.cnf and configure clients to use TLS",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.2",
+      "subcategory": "security_auth",
+      "legacy_name": "default_authentication_plugin",
+      "display_name": "Modern Auth Plugin Used",
+      "description": "Whether accounts use a modern auth plugin (ed25519 or caching_sha2_password). Legacy plugins weaken password storage and TLS handshake.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ed25519",
+          "ed25519-available",
+          "caching_sha2_password"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "10.4",
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Migrate accounts to ed25519 plugin: ALTER USER x IDENTIFIED VIA ed25519 USING PASSWORD('...')",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.3",
+      "subcategory": "security_auth",
+      "legacy_name": "password_policy_enabled",
+      "display_name": "Password Validation Enabled",
+      "description": "Whether a password-strength plugin (simple_password_check or cracklib_password_check) is loaded. Required to enforce minimum password complexity.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "INSTALL PLUGIN simple_password_check SONAME 'simple_password_check.so'",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.4",
+      "subcategory": "security_auth",
+      "legacy_name": "failed_auth_24h",
+      "display_name": "Low Failed Logins (24h)",
+      "description": "Volume of failed login attempts in the last 24h. Spikes can indicate brute-force or credential-stuffing activity.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 10
+      },
+      "sources": [
+        "zabbix",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate failed login sources; enable connection_control plugin",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.5",
+      "subcategory": "security_auth",
+      "legacy_name": "password_expiry_policy",
+      "display_name": "Password Expiry Policy",
+      "description": "Whether a server-wide password expiry policy (default_password_lifetime) is set. Indefinite passwords compound credential-leak risk over time.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 90,
+        "unit": "days"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "10.4",
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set default_password_lifetime = 90 in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.1",
+      "subcategory": "security_encrypt",
+      "legacy_name": "require_secure_transport",
+      "display_name": "Secure Transport Required",
+      "description": "Whether the server enforces TLS for every client (require_secure_transport). Without it, plaintext connections remain possible.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set require_secure_transport = ON in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.2",
+      "subcategory": "security_encrypt",
+      "legacy_name": "tls_version",
+      "display_name": "TLS 1.2+ Required",
+      "description": "Minimum negotiated TLS version (tls_version). TLS 1.0 and 1.1 are deprecated and vulnerable; 1.2+ is required for compliance.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "TLSv1.2",
+          "TLSv1.3",
+          "TLSv1.2,TLSv1.3"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set tls_version = 'TLSv1.2,TLSv1.3' in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.3",
+      "subcategory": "security_encrypt",
+      "legacy_name": "innodb_tablespace_encrypt",
+      "display_name": "InnoDB TDE Enabled",
+      "description": "Whether InnoDB at-rest tablespace encryption is on via a key-management plugin. Required to protect data files from offline disclosure.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "10.1",
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable TDE: configure file_key_management plugin and set innodb_encrypt_tables = ON",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.4",
+      "subcategory": "security_encrypt",
+      "legacy_name": "binlog_encryption",
+      "display_name": "Binlog Encryption",
+      "description": "Whether binary log files are encrypted on disk (encrypt_binlog). Binlogs leak row-level data unless encrypted.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "10.1",
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set encrypt_binlog = ON (requires file_key_management plugin configured)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.5",
+      "subcategory": "security_encrypt",
+      "legacy_name": "ssl_cert_valid",
+      "display_name": "SSL Certificate Valid",
+      "description": "Days remaining before the SSL/TLS certificate expires. Expired certs break TLS connections and trigger client failures.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 30,
+        "unit": "days"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Renew SSL certificate before expiration",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.1",
+      "subcategory": "security_audit",
+      "legacy_name": "server_audit_logging",
+      "display_name": "MariaDB Audit Plugin Enabled",
+      "description": "Whether the built-in server_audit plugin is loaded and recording events. Required for security investigation and compliance trails.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1",
+          "FORCE",
+          "FORCE_PLUS_PERMANENT"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "10.0",
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Install built-in audit plugin: INSTALL PLUGIN server_audit SONAME 'server_audit.so'; set server_audit_logging = ON",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.2",
+      "subcategory": "security_audit",
+      "legacy_name": "slow_query_log",
+      "display_name": "Slow Query Log Enabled",
+      "description": "Whether the slow query log is on. Required for performance triage and security forensic review of long-running statements.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set slow_query_log = ON and long_query_time in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.3",
+      "subcategory": "security_audit",
+      "legacy_name": "error_log_configured",
+      "display_name": "Error Log Configured",
+      "description": "Whether the error log writes to a persistent file (log_error). Required to retain crash and warning context after a restart.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set log_error to a persistent file path in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.4",
+      "subcategory": "security_audit",
+      "legacy_name": "log_raw_disabled",
+      "display_name": "Log Raw Passwords Off",
+      "description": "Whether log-raw is off. log-raw causes the server to record passwords in cleartext in the general/slow logs.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "OFF",
+          "0"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Ensure --log-raw is NOT set in my.cnf (logs passwords in cleartext)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.5",
+      "subcategory": "security_audit",
+      "legacy_name": "log_retention_days",
+      "display_name": "Log Retention (90d)",
+      "description": "Log retention duration. Must cover the compliance and incident-investigation window (typically 90+ days).",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 90,
+        "unit": "days"
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure log rotation to retain logs for compliance period",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-4.1",
+      "subcategory": "security_access",
+      "legacy_name": "root_remote_access",
+      "display_name": "Root Remote Access Blocked",
+      "description": "Whether the root account is restricted to local hosts only. Remote root access dramatically widens the breach surface.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost','127.0.0.1','::1')",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-4.2",
+      "subcategory": "security_access",
+      "legacy_name": "super_priv_count",
+      "display_name": "Limited SUPER Privilege",
+      "description": "Number of accounts holding the SUPER privilege. SUPER bypasses most safety controls and should be limited to break-glass roles.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 3
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Revoke SUPER from unnecessary accounts; use granular privileges instead",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-4.3",
+      "subcategory": "security_access",
+      "legacy_name": "anonymous_accounts",
+      "display_name": "No Anonymous Accounts",
+      "description": "Count of anonymous (empty username) accounts. Anonymous accounts allow unauthenticated access and must not exist on production.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "DROP USER ''@'localhost'; DROP USER ''@'%';",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-4.4",
+      "subcategory": "security_access",
+      "legacy_name": "wildcard_host_accounts",
+      "display_name": "No Wildcard Host Accounts",
+      "description": "Count of accounts allowed from wildcard '%' hosts that hold excessive privileges. Such accounts dramatically widen exposure.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Restrict user accounts to specific hosts rather than '%' wildcard",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-4.5",
+      "subcategory": "security_access",
+      "legacy_name": "grant_privilege_check",
+      "display_name": "GRANT OPTION Minimal",
+      "description": "Number of accounts holding GRANT OPTION. Excess holders can self-escalate privileges and propagate access uncontrollably.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 2
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Revoke GRANT OPTION from accounts that do not need to delegate privileges",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.1",
+      "subcategory": "capacity_storage",
+      "legacy_name": "disk_usage_pct",
+      "display_name": "Disk Usage < 85%",
+      "description": "Disk-usage percentage on the MariaDB data directory volume. Above 85% raises the risk of write failures and crash on full.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 85
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Add disk capacity or archive/purge old data",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.2",
+      "subcategory": "capacity_storage",
+      "legacy_name": "innodb_data_file_growth",
+      "display_name": "InnoDB Tablespace Growth Healthy",
+      "description": "Projected days until InnoDB data files exhaust their volume. Short windows demand capacity action or data lifecycle work.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 180,
+        "unit": "days_to_full"
+      },
+      "sources": [
+        "zabbix",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Plan capacity expansion or implement data lifecycle management",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.3",
+      "subcategory": "capacity_storage",
+      "legacy_name": "table_file_fragmentation",
+      "display_name": "Table Fragmentation Low",
+      "description": "Table-level data-free percentage (fragmentation). High fragmentation wastes disk and degrades scan performance.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 20,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Run OPTIMIZE TABLE or ALTER TABLE ... ENGINE=InnoDB to reclaim space",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.4",
+      "subcategory": "capacity_storage",
+      "legacy_name": "aria_storage_sized",
+      "display_name": "Aria Engine Storage Adequate",
+      "description": "Whether the Aria engine (used by internal MariaDB tables) has adequate disk space and log capacity.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Monitor aria_pagecache_buffer_size; ensure Aria log files have adequate space",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.5",
+      "subcategory": "capacity_storage",
+      "legacy_name": "data_dir_size",
+      "display_name": "Data Directory Monitored",
+      "description": "Whether total data directory size is being measured over time. Required for trend-based capacity forecasting.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "zabbix",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Configure monitoring for MariaDB data directory size growth",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.1",
+      "subcategory": "capacity_connections",
+      "legacy_name": "connection_usage_pct",
+      "display_name": "Connection Usage < 80%",
+      "description": "Active connection count as a percentage of max_connections. High utilization risks ER_CON_COUNT_ERROR rejections under load.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 80
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase max_connections or enable built-in thread pool (thread_handling = pool-of-threads)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.2",
+      "subcategory": "capacity_connections",
+      "legacy_name": "thread_pool_enabled",
+      "display_name": "Thread Pool Enabled",
+      "description": "Whether the built-in thread pool (thread_handling=pool-of-threads) is on. Recommended for high-concurrency workloads to bound resource use.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "pool-of-threads"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "5.5",
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set thread_handling = pool-of-threads in my.cnf for better high-concurrency performance (built-in, no Enterprise license needed)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.3",
+      "subcategory": "capacity_connections",
+      "legacy_name": "aborted_connections",
+      "display_name": "Low Aborted Connections",
+      "description": "Aborted connections as a percentage of total. High rates point to network issues, packet limits, or short timeouts.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 1,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Investigate aborted connections: check max_allowed_packet, wait_timeout, net_read_timeout",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.4",
+      "subcategory": "capacity_connections",
+      "legacy_name": "max_used_connections",
+      "display_name": "Peak Connection Headroom",
+      "description": "Peak Max_used_connections versus max_connections. Less than 20% headroom risks rejections during traffic spikes.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 80
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Review Max_used_connections vs max_connections; resize or enable thread pool",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.5",
+      "subcategory": "perf_cache",
+      "legacy_name": "thread_cache_hit_rate",
+      "display_name": "Thread Cache Effective",
+      "description": "Thread cache hit rate (when not using pool-of-threads). Low hit rates indicate frequent thread creation overhead — a performance / caching concern. Moved from capacity_connections in v1.3.0 per docs/guides/metric-placement-review.md §2A.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 90
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Increase thread_cache_size if not using pool-of-threads mode",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.1",
+      "subcategory": "perf_cache",
+      "legacy_name": "innodb_buffer_pool_hit_rate",
+      "display_name": "InnoDB Buffer Pool Hit Ratio Healthy",
+      "description": "InnoDB buffer pool hit ratio. Low values indicate the working set exceeds RAM, causing disk-bound reads; healthy values depend on workload type — OLTP workloads should sit near 99%, OLAP workloads with working sets larger than RAM operate healthily lower. Moved from capacity_maintenance in v1.3.0 per docs/guides/metric-placement-review.md §2A.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "min": 99 },
+          "oltp":    { "min": 98 },
+          "olap":    { "min": 85 },
+          "mixed":   { "min": 99 }
+        }
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase innodb_buffer_pool_size (target 70-80% of available RAM)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.2",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "purge_lag",
+      "display_name": "InnoDB Purge Lag Healthy",
+      "description": "InnoDB purge lag (history list length, in rows). Sustained growth points to long-running transactions blocking undo cleanup; write-heavy OLTP workloads naturally accumulate more undo than read-heavy or analytical workloads.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "max": 1000000 },
+          "oltp":    { "max": 5000000 },
+          "olap":    { "max": 100000 },
+          "mixed":   { "max": 1000000 }
+        }
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate long-running transactions causing purge lag; check innodb_max_purge_lag",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.3",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "optimize_table_needed",
+      "display_name": "Tables Not Needing OPTIMIZE",
+      "description": "Number of large tables exceeding 30% fragmentation. Such tables benefit from OPTIMIZE TABLE during a maintenance window.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Run OPTIMIZE TABLE for heavily fragmented tables during maintenance window",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.4",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "analyze_table_needed",
+      "display_name": "Statistics Up to Date",
+      "description": "Whether table statistics are kept fresh via innodb_stats_auto_recalc. Stale stats lead to bad query plans.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Run ANALYZE TABLE on tables with stale statistics; enable innodb_stats_auto_recalc",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.5",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "event_scheduler",
+      "display_name": "Event Scheduler Status",
+      "description": "Whether the event scheduler is on (when MariaDB events are used). If off, scheduled maintenance events do not fire.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set event_scheduler = ON if using MariaDB events for maintenance tasks",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.6",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "aria_pagecache_sized",
+      "display_name": "Aria Page Cache Sized",
+      "description": "Whether aria_pagecache_buffer_size is sized for the Aria/internal-table workload. Undersizing degrades internal-table I/O.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set aria_pagecache_buffer_size to at least 128M if Aria engine is in active use",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.1",
+      "subcategory": "capacity_planning",
+      "legacy_name": "auto_increment_proximity",
+      "display_name": "Auto-Increment Headroom",
+      "description": "Highest AUTO_INCREMENT consumption across columns. Approaching the data-type max risks insert failures (ER_AUTOINC_READ_FAILED).",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 80,
+        "unit": "percent_used"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Alter column to BIGINT UNSIGNED or use sequences before reaching INT/BIGINT limit",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.2",
+      "subcategory": "capacity_planning",
+      "legacy_name": "disk_space_projection",
+      "display_name": "Disk Space Projection",
+      "description": "Projected days until the data volume is full. Less than 6 months requires a capacity plan or archival strategy.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 180,
+        "unit": "days"
+      },
+      "sources": [
+        "zabbix",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Plan storage expansion or data archival strategy",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.3",
+      "subcategory": "capacity_planning",
+      "legacy_name": "capacity_review",
+      "display_name": "Capacity Review",
+      "description": "Whether a recurring capacity review (typically quarterly) takes place. Without it, growth surprises can outrun procurement.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Establish a regular capacity review process",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.4",
+      "subcategory": "capacity_planning",
+      "legacy_name": "partitioning_used",
+      "display_name": "Partitioning for Large Tables",
+      "description": "Whether large tables use partitioning. Partitioning helps manageability (rolling purge) and pruning-based performance.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Consider partitioning tables exceeding 100M rows; MariaDB supports range, list, hash, key partitioning",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.1",
+      "subcategory": "perf_cache",
+      "legacy_name": "buffer_pool_hit_ratio",
+      "display_name": "Buffer Pool Read Hit Rate Healthy",
+      "description": "InnoDB buffer pool read hit rate. Low values indicate the working set spills to disk and degrades latency; healthy values depend on workload type — OLTP workloads should sit near 99%, OLAP workloads with working sets larger than RAM operate healthily lower.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "min": 99 },
+          "oltp":    { "min": 98 },
+          "olap":    { "min": 85 },
+          "mixed":   { "min": 99 }
+        }
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase innodb_buffer_pool_size; target 70-80% of total RAM",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.2",
+      "subcategory": "perf_cache",
+      "legacy_name": "query_cache_deprecated",
+      "display_name": "Query Cache Disabled (10.11+)",
+      "description": "Whether the query cache is off or DEMAND-only. The cache was deprecated in 10.1.7 and removed in 10.11; leaving it ON adds contention.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "OFF",
+          "0",
+          "DEMAND"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "10.1",
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set query_cache_type = 0 in my.cnf; query cache removed in MariaDB 10.11",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.3",
+      "subcategory": "perf_cache",
+      "legacy_name": "aria_pagecache_hit_rate",
+      "display_name": "Aria Page Cache Hit Rate",
+      "description": "Aria page cache hit rate for internal table operations. Sustained low rates degrade internal-query latency.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 95
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Increase aria_pagecache_buffer_size if Aria cache hit rate is low",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.4",
+      "subcategory": "perf_cache",
+      "legacy_name": "table_open_cache_hit",
+      "display_name": "Table Open Cache Effective",
+      "description": "Hit ratio of table_open_cache. Low ratios cause repeated table-open syscalls and waste CPU.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 90
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Increase table_open_cache if Opened_tables/Uptime ratio is high",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.5",
+      "subcategory": "perf_cache",
+      "legacy_name": "join_buffer_size",
+      "display_name": "Join Buffer Size Tuned",
+      "description": "Whether join_buffer_size is sized for the join-heavy workload. Per-session allocation makes oversizing risky.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Tune join_buffer_size based on workload; default 256K is usually sufficient",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.1",
+      "subcategory": "perf_queries",
+      "legacy_name": "performance_schema",
+      "display_name": "Performance Schema Enabled",
+      "description": "Whether performance_schema is on. Required to surface per-query and per-wait diagnostics for tuning.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set performance_schema = ON in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.2",
+      "subcategory": "perf_queries",
+      "legacy_name": "slow_query_log_perf",
+      "display_name": "Slow Query Log Active",
+      "description": "Whether the slow query log is on. Required for systematic discovery of long-running and expensive statements.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set slow_query_log = ON in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.3",
+      "subcategory": "perf_queries",
+      "legacy_name": "long_query_time",
+      "display_name": "Long Query Time Threshold",
+      "description": "Slow-query threshold (long_query_time). Values above 1s under-capture problematic queries from the slow log.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 1,
+        "unit": "seconds"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set long_query_time = 1 (or lower) in my.cnf to capture slow queries",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.4",
+      "subcategory": "perf_queries",
+      "legacy_name": "log_queries_not_using_indexes",
+      "display_name": "Log Full Scans Enabled",
+      "description": "Whether log_queries_not_using_indexes is on. Required to flag full-scan queries for indexing review.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set log_queries_not_using_indexes = ON in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.5",
+      "subcategory": "perf_queries",
+      "legacy_name": "top_queries_analyzed",
+      "display_name": "Top Queries Reviewed",
+      "description": "Whether top queries (Performance Schema or slow log) get periodic review. Without review, regressions go unaddressed.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Review performance_schema.events_statements_summary_by_digest or use pt-query-digest",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.6",
+      "subcategory": "perf_queries",
+      "legacy_name": "full_table_scan_rate",
+      "display_name": "Full Table Scan Rate Healthy",
+      "description": "Share of queries doing full table scans. Sustained high rates indicate missing indexes or bad plans; analytical (OLAP) workloads naturally generate more scans than OLTP, where indexes should cover most access patterns.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "max": 10 },
+          "oltp":    { "max": 5 },
+          "olap":    { "max": 15 },
+          "mixed":   { "max": 10 }
+        },
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Add indexes to eliminate full table scans; use EXPLAIN to identify queries",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.7",
+      "subcategory": "perf_queries",
+      "legacy_name": "userstat_enabled",
+      "display_name": "User Statistics Enabled",
+      "description": "Whether MariaDB user statistics (userstat) are on. Required for per-user and per-table I/O attribution.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "5.2",
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set userstat = ON in my.cnf for enhanced per-user and per-table statistics (MariaDB-specific feature)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.1",
+      "subcategory": "perf_locks",
+      "legacy_name": "innodb_row_lock_waits",
+      "display_name": "InnoDB Lock Waits Healthy",
+      "description": "Number of InnoDB row-lock waits. High counts point to contention or long-running write transactions; write-heavy OLTP workloads tolerate more row-lock waits than read-heavy or analytical workloads.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "max": 10 },
+          "oltp":    { "max": 20 },
+          "olap":    { "max": 5 },
+          "mixed":   { "max": 10 }
+        }
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate blocking queries via information_schema.INNODB_LOCK_WAITS; optimize transactions",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.2",
+      "subcategory": "perf_locks",
+      "legacy_name": "innodb_deadlocks",
+      "display_name": "Deadlocks Minimal",
+      "description": "Recent InnoDB deadlock count. Sustained deadlocks indicate inconsistent locking order at the application layer.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 5
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable innodb_print_all_deadlocks = ON; review application transaction order",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.3",
+      "subcategory": "perf_locks",
+      "legacy_name": "metadata_lock_waits",
+      "display_name": "Metadata Lock Contention Healthy",
+      "description": "Volume of metadata-lock waits. High counts indicate DDL is being blocked by long-running transactions; high-concurrency OLTP environments should tolerate near-zero waits because a single waiting DDL stalls all dependent sessions.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "profiles": {
+          "default": { "max": 5 },
+          "oltp":    { "max": 2 },
+          "olap":    { "max": 5 },
+          "mixed":   { "max": 5 }
+        }
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Check information_schema.METADATA_LOCK_INFO; ensure DDLs run when no long transactions are open",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.4",
+      "subcategory": "perf_locks",
+      "legacy_name": "galera_flow_control",
+      "display_name": "Galera Flow Control Low",
+      "description": "Share of time the Galera cluster spends in flow control. Sustained pauses indicate a slow node throttling the cluster.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 5,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "10.0",
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Reduce write load on slow Galera nodes; tune wsrep_provider_options flow control parameters",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.1",
+      "subcategory": "perf_replication",
+      "legacy_name": "replica_lag",
+      "display_name": "Replica Lag < 30s",
+      "description": "Replica lag in seconds (Seconds_Behind_Master). Lag above 30s breaks read-after-write expectations and DR readiness.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 30,
+        "unit": "seconds"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Investigate replica SQL thread lag; consider parallel replication (slave_parallel_threads)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.2",
+      "subcategory": "perf_replication",
+      "legacy_name": "replica_sql_thread_running",
+      "display_name": "Replica SQL Thread Running",
+      "description": "Whether the replica SQL thread is applying events. If stopped, the replica falls behind and DR readiness degrades.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "Yes"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Check SHOW REPLICA STATUS; investigate and restart replica SQL thread",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.3",
+      "subcategory": "perf_replication",
+      "legacy_name": "replica_io_thread_running",
+      "display_name": "Replica IO Thread Running",
+      "description": "Whether the replica IO thread is connected to its source. If disconnected, no new binlog events arrive on the replica.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "Yes"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Check network connectivity to source; review replica error log",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.4",
+      "subcategory": "perf_replication",
+      "legacy_name": "galera_cluster_size",
+      "display_name": "Galera Cluster Size Consistent",
+      "description": "Whether wsrep_cluster_size matches the expected node count. A mismatch points to a partitioned or split cluster.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "10.0",
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Investigate split-brain risk; ensure all Galera nodes are joined (wsrep_local_state_comment = Synced)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.1",
+      "subcategory": "future_version",
+      "legacy_name": "db_version",
+      "display_name": "MariaDB Version Current",
+      "description": "Whether the running MariaDB major version is current and supported (10.11+ LTS). Older majors lose security patches.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Upgrade to MariaDB 10.11 LTS (current LTS) or MariaDB 11.4 LTS",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.2",
+      "subcategory": "future_version",
+      "legacy_name": "mysql_minor_patched",
+      "display_name": "Latest Minor Version Applied",
+      "description": "Whether the latest minor/patch release within the major version is applied. Falling behind misses bug and security fixes.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Apply latest MariaDB patch release for bug fixes and security patches",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.3",
+      "subcategory": "future_version",
+      "legacy_name": "version_eol_status",
+      "display_name": "Not End-of-Life",
+      "description": "Whether the MariaDB version is within active support (not EOL). EOL versions stop receiving security patches.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "supported"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Upgrade from EOL MariaDB version; consult MariaDB lifecycle page",
+      "cis_reference": null,
+      "gate_scope": "pillar"
+    },
+    {
+      "metric_id": "FUT-1.4",
+      "subcategory": "future_version",
+      "legacy_name": "innodb_only",
+      "display_name": "InnoDB Storage Engine Used",
+      "description": "Whether all user tables use InnoDB. MyISAM lacks crash recovery and row-level locking and is unsuitable for transactional data.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Convert MyISAM tables to InnoDB: ALTER TABLE t ENGINE = InnoDB",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.5",
+      "subcategory": "future_version",
+      "legacy_name": "mysql_lts_channel",
+      "display_name": "LTS Release Track",
+      "description": "Whether the deployment tracks an LTS release (10.11 or 11.4). LTS tracks reduce upgrade churn and broaden vendor support.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Prefer MariaDB 10.11 LTS or 11.4 LTS over short-term maintenance releases for production",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-2.1",
+      "subcategory": "future_config",
+      "legacy_name": "galera_or_replication_ha",
+      "display_name": "HA Solution Deployed",
+      "description": "Whether a high-availability solution (Galera Cluster, MaxScale/HAProxy with replication) is in place. Required to bound downtime during node failure.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Implement Galera Cluster or MariaDB MaxScale for automatic failover (MariaDB does NOT use InnoDB Cluster or Group Replication)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-2.2",
+      "subcategory": "future_config",
+      "legacy_name": "maxscale_configured",
+      "display_name": "MaxScale/ProxySQL Used",
+      "description": "Whether a database proxy (MaxScale or ProxySQL) fronts MariaDB. Provides transparent failover, query routing, and load balancing.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Deploy MariaDB MaxScale for connection pooling, query routing, and failover transparency",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-2.3",
+      "subcategory": "future_config",
+      "legacy_name": "innodb_strict_mode",
+      "display_name": "InnoDB Strict Mode",
+      "description": "Whether innodb_strict_mode is on. Required to prevent silent truncation and surface DDL/DML errors during inserts.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "1"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set innodb_strict_mode = ON in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.1",
+      "subcategory": "future_planning",
+      "legacy_name": "upgrade_plan",
+      "display_name": "Upgrade Plan Documented",
+      "description": "Whether a documented MariaDB upgrade plan exists. Required to upgrade ahead of EOL without emergency cutovers.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Document upgrade path and schedule before current version approaches EOL",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.2",
+      "subcategory": "future_planning",
+      "legacy_name": "sql_mode",
+      "display_name": "Strict SQL Mode Enabled",
+      "description": "Whether sql_mode includes STRICT_TRANS_TABLES and NO_ENGINE_SUBSTITUTION. Required to surface invalid data and engine fallbacks.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Add STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION to sql_mode in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.3",
+      "subcategory": "future_planning",
+      "legacy_name": "deprecated_features_check",
+      "display_name": "No Deprecated Features",
+      "description": "Count of deprecated MariaDB features used by stored routines. Deprecated features can break on a future major upgrade.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Review MariaDB changelog for deprecated features; test upgrade in staging first",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.4",
+      "subcategory": "future_planning",
+      "legacy_name": "myisam_tables_count",
+      "display_name": "No MyISAM User Tables",
+      "description": "Count of user-data tables still using MyISAM. MyISAM lacks crash recovery and row-level locking; counts above zero are legacy debt.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Convert MyISAM tables to InnoDB for crash recovery and row-level locking",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.5",
+      "subcategory": "future_planning",
+      "legacy_name": "character_set_utf8mb4",
+      "display_name": "utf8mb4 Character Set",
+      "description": "Whether databases and tables use the utf8mb4 character set. Required for full Unicode coverage including emoji and supplementary planes.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set character_set_server = utf8mb4 and collation_server = utf8mb4_unicode_ci in my.cnf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.6",
+      "subcategory": "future_planning",
+      "legacy_name": "system_versioning_used",
+      "display_name": "System Versioning Considered",
+      "description": "Whether MariaDB system-versioned (temporal) tables are used where appropriate. Provides built-in audit history without trigger plumbing.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": "10.3",
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Consider using MariaDB system-versioned tables (WITH SYSTEM VERSIONING) for audit history (unique MariaDB feature not in MySQL)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.1",
+      "subcategory": "future_foundation",
+      "legacy_name": "monitoring_connected",
+      "display_name": "Monitoring Connected",
+      "description": "Whether the MariaDB instance is wired into a monitoring system (PMM, Zabbix, etc.). Required to detect anomalies and saturation early.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Connect MariaDB to Percona Monitoring and Management (PMM) or Zabbix",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.2",
+      "subcategory": "future_foundation",
+      "legacy_name": "alerting_configured",
+      "display_name": "Alerting Configured",
+      "description": "Whether alerts cover critical MariaDB metrics (lag, flow control, connections, disk). Required to drive paging on incidents.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Configure alerts for replication lag, Galera flow control, connection saturation, disk usage",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.3",
+      "subcategory": "future_foundation",
+      "legacy_name": "slow_query_analysis",
+      "display_name": "Slow Query Analysis",
+      "description": "Whether slow-query logs are analyzed on a recurring basis (e.g., pt-query-digest). Without analysis, regressions accumulate unseen.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Use pt-query-digest or analyze performance_schema.events_statements_summary_by_digest periodically",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.4",
+      "subcategory": "future_foundation",
+      "legacy_name": "change_management",
+      "display_name": "Change Management Process",
+      "description": "Whether schema and configuration changes pass through a controlled change-management process. Required to avoid undocumented drift.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mariadb_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Implement schema migration tooling (Liquibase, Flyway) and change approval process",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.54",
+      "subcategory": "perf_replication",
+      "legacy_name": "gtid_consistency",
+      "display_name": "GTID Consistency Maintained",
+      "description": "Whether GTIDs are consistent between source and replica (no errant transactions). Errant transactions break safe failover.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Investigate errant transactions using GTID_SUBTRACT(); use pt-table-checksum",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.6",
+      "subcategory": "security_encrypt",
+      "legacy_name": "have_ssl",
+      "display_name": "SSL Available",
+      "description": "Whether the server build supports SSL/TLS (have_ssl=YES). Required as a precondition for encrypting client connections.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "YES"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Ensure MySQL is compiled with SSL support and ssl-ca/ssl-cert/ssl-key are configured",
+      "cis_reference": "CIS 4.3"
+    },
+    {
+      "metric_id": "SEC-3.51",
+      "subcategory": "security_audit",
+      "legacy_name": "general_log_status",
+      "display_name": "Audit Plugin Enabled",
+      "description": "Whether an audit plugin (MySQL Enterprise Audit or community audit) is loaded and recording events. Required for compliance trails.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Install audit plugin: INSTALL PLUGIN audit_log SONAME 'audit_log.so'",
+      "cis_reference": "CIS 6.2"
+    },
+    {
+      "metric_id": "CAP-1.7",
+      "subcategory": "capacity_storage",
+      "legacy_name": "innodb_buffer_pool_size",
+      "display_name": "Buffer Pool Size Configured",
+      "description": "Whether innodb_buffer_pool_size is sized for the workload (typically 70-80% of RAM on dedicated hosts). Undersizing forces disk-bound reads.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set innodb_buffer_pool_size to 70-80% of available RAM for dedicated database servers",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.6",
+      "subcategory": "capacity_storage",
+      "legacy_name": "total_data_size_bytes",
+      "display_name": "Total Data Size Tracked",
+      "description": "Whether total database data size (DATA_LENGTH + INDEX_LENGTH) is being captured. Required for trend-based growth and capacity planning.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Monitor total data size growth trends for capacity planning",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.56",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "innodb_buffer_pool_instances",
+      "display_name": "Buffer Pool Instances Tuned",
+      "description": "Whether innodb_buffer_pool_instances is sized for the pool. Misconfiguration causes contention or wasted memory on multi-GB pools.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set innodb_buffer_pool_instances = 1 per GB of buffer pool (max 8-16)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.54",
+      "subcategory": "capacity_storage",
+      "legacy_name": "innodb_redo_log_size",
+      "display_name": "Redo Log Sized Adequately",
+      "description": "Whether innodb_log_file_size (or innodb_redo_log_capacity) is sized for the write workload. Undersizing causes frequent flush stalls.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Tune innodb_log_file_size (or innodb_redo_log_capacity in MySQL 8.0.30+)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.8",
+      "subcategory": "perf_queries",
+      "legacy_name": "com_select",
+      "display_name": "Query Throughput Tracked",
+      "description": "Whether SELECT throughput (Com_select) is being captured. Required to track query-rate trends and detect regressions.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable Performance Schema and monitor Com_select counter for throughput trends",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.53",
+      "subcategory": "perf_cache",
+      "legacy_name": "key_buffer_size",
+      "display_name": "Key Buffer Minimal (InnoDB)",
+      "description": "Whether key_buffer_size is kept minimal on InnoDB-only deployments. Oversizing wastes RAM that should go to the InnoDB buffer pool.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Reduce key_buffer_size to ~8M if not using MyISAM tables",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.55",
+      "subcategory": "perf_cache",
+      "legacy_name": "sort_buffer_size",
+      "display_name": "Sort Buffer Size Tuned",
+      "description": "Whether sort_buffer_size is in the safe range (256K-4M). It is allocated per session, so oversizing exhausts memory under load.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Tune sort_buffer_size based on workload; avoid setting too large (per-session allocation)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.57",
+      "subcategory": "perf_queries",
+      "legacy_name": "filesort_rate",
+      "display_name": "Low Filesort Rate",
+      "description": "Rate of filesort merge passes. High counts indicate sorts spilling to disk; usually mitigated by indexes or larger sort buffers.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 5,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Add indexes to ORDER BY / GROUP BY columns; increase sort_buffer_size",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.54",
+      "subcategory": "perf_locks",
+      "legacy_name": "table_lock_contention",
+      "display_name": "Table Lock Contention Low",
+      "description": "Share of table-level lock waits. High ratios indicate residual MyISAM tables; InnoDB uses row-level locking.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 5,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Migrate MyISAM tables to InnoDB; InnoDB uses row-level locking",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.52",
+      "subcategory": "future_planning",
+      "legacy_name": "deprecated_mysql_native_password",
+      "display_name": "mysql_native_password Not Used",
+      "description": "Count of accounts still using the deprecated mysql_native_password plugin. Migration is required ahead of plugin removal.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mysql_version": "8.0",
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Migrate accounts to caching_sha2_password: ALTER USER x IDENTIFIED WITH caching_sha2_password",
+      "cis_reference": null
+    }
+  ],
+  "consistency_rules": []
+}

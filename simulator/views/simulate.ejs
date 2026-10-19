@@ -1,0 +1,250 @@
+<% var title = 'Score Simulator'; %>
+<%- include('partials/header') %>
+
+<h1>Score Simulator - <%= tech.charAt(0).toUpperCase() + tech.slice(1) %></h1>
+
+<div class="simulator-controls">
+  <label>Load sample:
+    <select id="scenarioSelect" onchange="window.location.href='/simulate/<%= tech %>?scenario=' + this.value">
+      <% samples.forEach(function(s) { %>
+        <option value="<%= s %>" <%= scenario === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
+      <% }) %>
+    </select>
+  </label>
+  <label>Workload profile:
+    <select id="workloadProfile" class="context-input">
+      <% workloadProfiles.forEach(function(p) { %>
+        <option value="<%= p %>" <%= workloadProfile === p ? 'selected' : '' %>><%= p %></option>
+      <% }) %>
+    </select>
+  </label>
+  <label>RAM (GB):
+    <input type="number" id="sysRamGb" class="context-input" min="0" step="0.5" style="width:6em"
+           value="<%= systemFacts.ram_kb ? (systemFacts.ram_kb / (1024 * 1024)).toFixed(2).replace(/\.00$/, '') : '' %>"
+           placeholder="e.g. 16">
+  </label>
+  <label>CPU cores:
+    <input type="number" id="sysCpu" class="context-input" min="0" step="1" style="width:5em"
+           value="<%= systemFacts.cpu_count || '' %>" placeholder="e.g. 8">
+  </label>
+  <label>Storage (GB):
+    <input type="number" id="sysStorageGb" class="context-input" min="0" step="1" style="width:6em"
+           value="<%= systemFacts.storage_size_kb ? (systemFacts.storage_size_kb / (1024 * 1024)).toFixed(0) : '' %>"
+           placeholder="e.g. 500">
+  </label>
+  <label>Edition:
+    <% var edVal = (systemFacts.edition || '').toLowerCase(); %>
+    <select id="sysEdition" class="context-input">
+      <% ['', 'enterprise', 'standard', 'se2', 'express'].forEach(function(e) { %>
+        <option value="<%= e %>" <%= edVal === e ? 'selected' : '' %>><%= e === '' ? '— none —' : e %></option>
+      <% }) %>
+    </select>
+  </label>
+  <button class="btn btn-primary" onclick="recalculate()">Recalculate</button>
+</div>
+
+<% if (licenseOptions && licenseOptions.length) { %>
+<details class="license-panel"<%= tech === 'oracle' ? ' open' : '' %>>
+  <summary>Licensed options (<span id="licenseCount"><%= licensedOptions.length %></span>/<%= licenseOptions.length %>) — toggle owned packs/options, then Recalculate</summary>
+  <div class="license-options">
+    <% licenseOptions.forEach(function(opt) { %>
+      <label class="license-option"><input type="checkbox" class="license-opt" value="<%= opt %>" <%= licensedOptions.indexOf(opt) !== -1 ? 'checked' : '' %>> <%= opt %></label>
+    <% }) %>
+  </div>
+  <p class="license-hint text-muted">Metrics needing an option you don't own are <em>not applicable</em> (reported, no penalty). <code>enterprise_edition</code> also auto-derives when <code>systemFacts.edition = enterprise</code>.</p>
+</details>
+<% } %>
+
+<% if (nextRungs && nextRungs.length) { %>
+<section class="maturity-ladder" id="maturityLadder"></section>
+<script>window.__nextRungs = <%- JSON.stringify(nextRungs) %>;</script>
+<% } %>
+
+<details class="payload-panel" id="payloadPanel">
+  <summary>Import a collected payload (paste the values the checker pushes, check the shape, then score it)</summary>
+  <p class="text-muted">A flat <code>{ legacy_name: value }</code> map, or an object with <code>values</code> and optional <code>systemFacts</code>, <code>workloadProfile</code>, <code>licensedOptions</code>. The shape check reports values the catalog cannot read (prose where a number is expected, units off by a thousand, enum values outside the pass list) before anything is scored.</p>
+  <textarea id="payloadText" placeholder='{"values": {"archive_mode": "on", "autovacuum_health": "on"}, "systemFacts": {"ram_kb": 16777216}}'></textarea>
+  <div class="payload-actions">
+    <button type="button" class="btn btn-secondary" onclick="checkPayloadShape()">Check shape</button>
+    <button type="button" class="btn btn-primary" onclick="scorePayload()">Score this payload</button>
+    <span id="payloadStatus" class="text-muted"></span>
+  </div>
+  <div id="payloadReport"></div>
+</details>
+
+<div class="simulator-layout">
+  <div class="simulator-inputs">
+    <h2>Metric Values</h2>
+    <form id="simulatorForm">
+      <% structure.forEach(function(p) { %>
+      <div class="pillar-section">
+        <h3 class="pillar-toggle" onclick="togglePillar(this)"><%= p.name %> <span class="toggle-icon">+</span></h3>
+        <div class="pillar-content" style="display:none">
+          <% p.subcategories.forEach(function(s) { %>
+          <h4><%= s.name %> (<%= s.maxPoints %> pts)</h4>
+          <div class="metric-inputs">
+            <% s.metrics.forEach(function(m) { %>
+            <div class="metric-input-row<%= m.derived ? ' metric-derived' : '' %>" data-metric="<%= m.legacy_name %>">
+              <label title="<%= m.description || '' %>">
+                <span class="badge badge-<%= m.criticality %> badge-sm"><%= m.criticality.charAt(0).toUpperCase() %></span>
+                <% if (m.derived) { %><span class="badge badge-derived badge-sm" title="Engine-computed from collected inputs">Derived</span><% } %>
+                <% (m.sources || []).forEach(function(s) { %><span class="badge badge-source badge-source-<%= s %> badge-sm" title="Source: <%= s %>"><%= s %></span><% }) %>
+                <% if (m.license_requirement) { %><span class="badge badge-license badge-sm" title="Requires license: <%= m.license_requirement %>"><%= m.license_requirement %></span><% } %>
+                <% if (result.allMetrics.some(function(x) { return x.name === m.legacy_name && x.applicable !== false && x.required === false; })) { %><span class="badge badge-sm not-required-tag" title="Your declared targets do not require this check: it still earns or loses its points, but leaves the target and never gates.">not required by your targets</span><% } %>
+                <span class="metric-label"><%= m.display_name %></span>
+                <code class="metric-id"><%= m.metric_id %></code>
+              </label>
+              <% if (m.derived) { %>
+                <% var df = m.derived_from || {}; %>
+                <div class="metric-input metric-derived-readout" title="The engine computes this value from the inputs listed below.">
+                  <span class="metric-derived-formula"><code><%= df.formula || '(unknown formula)' %></code></span>
+                  <span class="metric-derived-inputs">inputs: <%= (df.inputs || []).join(', ') || '(none)' %></span>
+                  <% if (m.currentValue !== '' && m.currentValue !== undefined) { %>
+                    <span class="metric-derived-current">current: <code><%= m.currentValue %></code></span>
+                  <% } %>
+                </div>
+              <% } else if (m.evaluation_type === 'boolean') { %>
+                <select name="<%= m.legacy_name %>" class="metric-input">
+                  <option value="">-- not set --</option>
+                  <option value="true" <%= m.currentValue === true || m.currentValue === 'true' ? 'selected' : '' %>>true</option>
+                  <option value="false" <%= m.currentValue === false || m.currentValue === 'false' ? 'selected' : '' %>>false</option>
+                </select>
+              <% } else if (m.evaluation_type === 'enum') { %>
+                <% var passValues = (m.evaluation_config || {}).pass_values || []; %>
+                <select name="<%= m.legacy_name %>" class="metric-input">
+                  <option value="">-- not set --</option>
+                  <% passValues.forEach(function(v) { %>
+                    <option value="<%= v %>" <%= String(m.currentValue) === String(v) ? 'selected' : '' %>><%= v %></option>
+                  <% }) %>
+                  <option value="INVALID">Other (fail)</option>
+                </select>
+              <% } else { %>
+                <input type="text" name="<%= m.legacy_name %>" value="<%= m.currentValue !== undefined ? m.currentValue : '' %>" class="metric-input" placeholder="Enter value">
+              <% } %>
+            </div>
+            <% }) %>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+      <% }) %>
+    </form>
+  </div>
+
+  <div class="simulator-results">
+    <h2>Score Breakdown</h2>
+    <div id="scoreResults">
+      <div class="total-score status-<%= result.status %>">
+        <div class="score-value"><%= result.totalScore %></div>
+        <div class="score-max">/ <%= result.totalMaxScore %></div>
+        <div class="score-pct">target <%= result.targetScore %> · <%= result.targetAttainment %>% reached<% if (result.pointsNotAssessed > 0) { %> · <%= result.pointsNotAssessed %> not assessed<% } %></div>
+        <div class="score-status"><%= result.status.replace('_', ' ') %></div>
+      </div>
+
+      <% if (result.disposition && result.disposition.state === 'critical_unresolved') { %>
+      <div class="score-disposition" role="status">
+        <div class="disposition-headline">Critical requirement unresolved (<%= result.disposition.items.length %>)</div>
+        <ul>
+          <% result.disposition.items.forEach(function(i) { %>
+          <li><code><%= i.id %></code> <%= i.name %>: <%= i.reason === 'missing' ? 'not provided' : i.reason === 'invalidated' ? 'invalidated by ' + (i.rules || []).join(', ') : i.reason === 'rule' ? 'cross-metric rule' : 'failed' %></li>
+          <% }) %>
+        </ul>
+      </div>
+      <% } %>
+
+      <% if (!result.onTarget && result.requiredMissed && result.requiredMissed.length) { %>
+      <div class="score-target-gap" role="status">
+        <div class="disposition-headline">Target not reached: <%= result.requiredMissed.length %> required check<%= result.requiredMissed.length === 1 ? '' : 's' %> missed</div>
+        <ul>
+          <% result.requiredMissed.forEach(function(i) { %>
+          <li><code><%= i.id %></code> <%= i.name %>: <%= i.reason === 'missing' ? (i.outOfScope ? 'not assessed, outside this run\'s collection scope' : 'not provided') : i.reason === 'invalidated' ? 'invalidated by a rule' : i.reason === 'partial' ? 'partial credit' : i.reason === 'rule' ? 'this rule took required points' : 'failed' %></li>
+          <% }) %>
+        </ul>
+      </div>
+      <% } %>
+
+      <% if (result.coverage) { %>
+      <div class="score-coverage">
+        <div class="coverage-headline">
+          <span class="coverage-pct"><%= result.coverage.percentage %>%</span> catalog coverage
+          <span class="text-muted">(<%= result.coverage.assessedWeight %>/<%= result.coverage.applicableWeight %> pts assessed)</span>
+        </div>
+        <% if (result.coverage.collectionScope === 'partial') { %>
+        <div class="coverage-scope" title="<%= result.coverage.outOfScope.metricIds.join(', ') %>">Partial collection scope, <%= result.coverage.outOfScope.count %> applicable metrics never assessed: <%= [result.coverage.outOfScope.byReason.mode ? result.coverage.outOfScope.byReason.mode + ' agent-only in this standalone run' : '', result.coverage.outOfScope.byReason.source ? result.coverage.outOfScope.byReason.source + ' from a source this run did not declare' : ''].filter(Boolean).join('; ') %>.<% if (result.coverage.outOfScope.critical.length) { %> Critical among them: <%= result.coverage.outOfScope.critical.join(', ') %>.<% } %></div>
+        <% } %>
+        <div class="coverage-counts">
+          <span title="metrics scored">✓ <%= result.coverage.counts.scored %> scored</span>
+          <span class="cov-crit" title="missing critical metrics">✗ <%= result.coverage.counts.missingCritical %> crit</span>
+          <span title="missing non-critical metrics"><%= result.coverage.counts.missingNonCritical %> non-crit</span>
+          <span title="not applicable"><%= result.coverage.counts.notApplicable %> n/a</span>
+          <span title="license-excluded"><%= result.coverage.counts.licenseExcluded %> lic</span>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="pillar-scores">
+        <% Object.entries(result.pillars).forEach(function([id, p]) { %>
+        <div class="pillar-score-row">
+          <div class="pillar-score-name"><%= p.name %><% if (p.criticalGated) { %> <span class="pillar-gate-chip" title="A critical metric in this pillar hard-failed or is missing. The pillar is capped at 60% until it is fixed (criticality gate).">critical gate</span><% } %></div>
+          <div class="pillar-score-bar-container">
+            <div class="pillar-score-bar status-bg-<%= p.status %>" style="width:<%= p.percentage %>%"></div>
+          </div>
+          <div class="pillar-score-value"><%= p.score %>/<%= p.maxScore %> <span class="text-muted">target <%= p.target %> · <%= p.targetAttainment %>%</span></div>
+        </div>
+        <% }) %>
+      </div>
+
+      <% if (result.context) { %>
+      <details class="context-block">
+        <summary>Assessment context — engine <%= result.context.engineVersion %> · catalog <%= result.context.catalogVersion %></summary>
+        <dl>
+          <dt>Technology</dt><dd><%= result.context.technology %></dd>
+          <dt>Mode</dt><dd><%= result.context.mode %></dd>
+          <dt>Workload</dt><dd><%= result.context.workloadProfile %></dd>
+          <% if (result.context.deploymentProfile) { %><dt>Deployment</dt><dd><%= result.context.deploymentProfile %></dd><% } %>
+          <dt>Licensed</dt><dd><%= result.context.licensedOptions.length ? result.context.licensedOptions.join(', ') : '—' %></dd>
+          <dt>Facts provided</dt><dd><%= result.context.systemFactsProvided.length ? result.context.systemFactsProvided.join(', ') : '—' %></dd>
+          <% if (result.context.fingerprint) { %><dt>Rules code</dt><dd><code title="<%= result.context.fingerprint.rules %>"><%= result.context.fingerprint.rulesShort %></code></dd>
+          <dt>Declarations code</dt><dd><code title="<%= result.context.fingerprint.declarations %>"><%= result.context.fingerprint.declarationsShort %></code></dd><% } %>
+        </dl>
+      </details>
+      <% } %>
+
+      <h3>Findings (<%= result.allFindings.length %>)</h3>
+      <div class="findings-list">
+        <% var critFindings = result.allFindings.filter(function(f) { return f.severity !== 'ok' && f.severity !== 'info'; }).slice(0, 20); %>
+        <% if (critFindings.length > 0) { %>
+          <% critFindings.forEach(function(f) { %>
+          <div class="finding finding-<%= f.severity %>">
+            <span class="badge badge-<%= f.severity %>"><%= f.severity %></span>
+            <% if (f.kind === 'consistency') { %><span class="badge badge-rule">rule <%= f.rule_id %></span><% } %>
+            <strong><%= f.title %></strong>
+            <% if (f.kind === 'consistency' && f.description) { %><p class="finding-description"><%= f.description %></p><% } %>
+            <% if (f.remediation) { %><p class="finding-remediation"><%= f.remediation %></p><% } %>
+          </div>
+          <% }) %>
+        <% } else { %>
+          <p class="text-muted">No critical or warning findings.</p>
+        <% } %>
+      </div>
+
+      <h3>Recommendations</h3>
+      <div class="recommendations-list">
+        <% var topRecs = result.recommendations.slice(0, 10); %>
+        <% if (topRecs.length > 0) { %>
+          <% topRecs.forEach(function(r) { %>
+          <div class="recommendation">
+            <span class="badge badge-<%= r.priority === 'high' ? 'critical' : r.priority === 'medium' ? 'important' : 'advisory' %>"><%= r.priority %></span>
+            <strong><%= r.title %></strong><% if (r.aboveTarget) { %> <span class="badge badge-sm">above your target</span><% } %>
+            <p><%= r.action %></p>
+          </div>
+          <% }) %>
+        <% } else { %>
+          <p class="text-muted">No recommendations.</p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,100 @@
+name: Test & Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Validate catalogs
+        run: npm run validate-catalogs
+
+      - name: Run test coverage
+        if: matrix.node-version == 20
+        run: npm run test:coverage
+
+  simulator-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd simulator && npm ci
+      - name: Boot the simulator and fetch every page
+        run: |
+          PORT=3199 node simulator/server.js &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:3199/overview/postgresql > /dev/null && break
+            sleep 1
+          done
+          set -e
+          for page in /overview/postgresql /model/postgresql /metrics/postgresql /metrics/postgresql/rules /simulate/postgresql /score-map/postgresql /impact/postgresql; do
+            curl -sf -o /dev/null "http://127.0.0.1:3199$page" || { echo "FAILED $page"; kill $SERVER_PID; exit 1; }
+            echo "ok $page"
+          done
+          curl -sf -o /dev/null -X POST -H 'Content-Type: application/json' -d '{"values":{},"scenario":"healthy"}' http://127.0.0.1:3199/simulate/postgresql/calculate || { echo "FAILED calculate"; kill $SERVER_PID; exit 1; }
+          curl -sf -o /dev/null -X POST -H 'Content-Type: application/json' -d '{"values":{"archive_mode":"on"}}' http://127.0.0.1:3199/simulate/postgresql/check-payload || { echo "FAILED check-payload"; kill $SERVER_PID; exit 1; }
+          # Loopback by default (DEC-020): the runner's network address must not answer.
+          NET_IP=$(hostname -I | awk '{print $1}')
+          if curl -s -o /dev/null --max-time 3 "http://$NET_IP:3199/overview/postgresql"; then echo "FAILED simulator reachable on $NET_IP"; kill $SERVER_PID; exit 1; fi
+          echo "ok not reachable on $NET_IP"
+          kill $SERVER_PID
+
+  docker-smoke:
+    # The documented quickstart: build the image and serve pages with no source
+    # folders mounted, so the image alone must carry everything it needs.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the simulator image
+        run: docker build -f simulator/Dockerfile -t scoring-simulator:ci .
+      - name: Run the image and fetch the main pages
+        run: |
+          docker run -d --name sim -p 127.0.0.1:3299:3000 scoring-simulator:ci
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:3299/overview/postgresql > /dev/null && break
+            sleep 1
+          done
+          set -e
+          for page in /overview/postgresql /model/postgresql /metrics/postgresql /simulate/postgresql /score-map/postgresql /impact/postgresql; do
+            curl -sf -o /dev/null "http://127.0.0.1:3299$page" || { echo "FAILED $page"; docker logs sim; exit 1; }
+            echo "ok $page"
+          done
+          docker rm -f sim
+      - name: Run the documented quickstart (compose) and fetch a page
+        run: |
+          docker compose -f simulator/docker-compose.yml up -d --build
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:3000/overview/postgresql > /dev/null && break
+            sleep 1
+          done
+          curl -sf -o /dev/null http://127.0.0.1:3000/overview/postgresql || { echo "FAILED compose quickstart"; docker compose -f simulator/docker-compose.yml logs; exit 1; }
+          echo "ok compose quickstart"
+          docker compose -f simulator/docker-compose.yml down

@@ -1,0 +1,2657 @@
+{
+  "version": "1.2.1",
+  "maturity": "draft",
+  "description": "Microsoft SQL Server 2022 health metric catalog.",
+  "release_notes": "v1.2.1 (2026-09-23): catalog maturity label added (draft: not yet reviewed by a technology leader, neither for collection nor for scoring). No metric, threshold, weight or rule change. v1.2.0: schema-ready for consistency_rules (rules deferred to Technology Leader work). v1.1.0: Subcategory point allocations within Capacity, Performance, and Future-Proofing pillars differ from the architecture specification (SCORING_SYSTEM_ARCHITECTURE.md section 2.3). These splits have been stable since v1.0.0 and are flagged for tech-leader review. See docs/guides/metric-placement-review.md for details.",
+  "pillars": {
+    "backup": {
+      "name": "Backup & Recovery",
+      "maxPoints": 20,
+      "order": 1,
+      "icon": "shield"
+    },
+    "security": {
+      "name": "Security",
+      "maxPoints": 20,
+      "order": 2,
+      "icon": "lock"
+    },
+    "capacity": {
+      "name": "Capacity",
+      "maxPoints": 20,
+      "order": 3,
+      "icon": "chart-bar"
+    },
+    "performance": {
+      "name": "Performance",
+      "maxPoints": 20,
+      "order": 4,
+      "icon": "lightning"
+    },
+    "futureproof": {
+      "name": "Future-Proofing",
+      "maxPoints": 20,
+      "order": 5,
+      "icon": "rocket"
+    }
+  },
+  "subcategories": {
+    "backup_wal": {
+      "pillar": "backup",
+      "name": "Log Archiving",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "backup_dumps": {
+      "pillar": "backup",
+      "name": "Scheduled Backups",
+      "maxPoints": 4,
+      "order": 2
+    },
+    "backup_tools": {
+      "pillar": "backup",
+      "name": "Backup Tools",
+      "maxPoints": 4,
+      "order": 3
+    },
+    "backup_recovery": {
+      "pillar": "backup",
+      "name": "Recovery Readiness",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "backup_retention": {
+      "pillar": "backup",
+      "name": "Retention Compliance",
+      "maxPoints": 3,
+      "order": 5
+    },
+    "security_auth": {
+      "pillar": "security",
+      "name": "Authentication",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "security_encrypt": {
+      "pillar": "security",
+      "name": "Encryption",
+      "maxPoints": 5,
+      "order": 2
+    },
+    "security_audit": {
+      "pillar": "security",
+      "name": "Audit & Logging",
+      "maxPoints": 5,
+      "order": 3
+    },
+    "security_access": {
+      "pillar": "security",
+      "name": "Access Control",
+      "maxPoints": 5,
+      "order": 4
+    },
+    "capacity_storage": {
+      "pillar": "capacity",
+      "name": "Storage",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "capacity_connections": {
+      "pillar": "capacity",
+      "name": "Connections",
+      "maxPoints": 5,
+      "order": 2
+    },
+    "capacity_maintenance": {
+      "pillar": "capacity",
+      "name": "Maintenance",
+      "maxPoints": 6,
+      "order": 3
+    },
+    "capacity_planning": {
+      "pillar": "capacity",
+      "name": "Planning",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "perf_cache": {
+      "pillar": "performance",
+      "name": "Caching",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "perf_queries": {
+      "pillar": "performance",
+      "name": "Query Performance",
+      "maxPoints": 7,
+      "order": 2
+    },
+    "perf_locks": {
+      "pillar": "performance",
+      "name": "Locking",
+      "maxPoints": 4,
+      "order": 3
+    },
+    "perf_replication": {
+      "pillar": "performance",
+      "name": "Replication",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "future_version": {
+      "pillar": "futureproof",
+      "name": "Version Currency",
+      "maxPoints": 7,
+      "order": 1
+    },
+    "future_config": {
+      "pillar": "futureproof",
+      "name": "Configuration",
+      "maxPoints": 3,
+      "order": 2
+    },
+    "future_planning": {
+      "pillar": "futureproof",
+      "name": "Upgrade Planning",
+      "maxPoints": 6,
+      "order": 3
+    },
+    "future_foundation": {
+      "pillar": "futureproof",
+      "name": "Health Foundation",
+      "maxPoints": 4,
+      "order": 4
+    }
+  },
+  "metrics": [
+    {
+      "metric_id": "BAK-1.1",
+      "subcategory": "backup_wal",
+      "legacy_name": "recovery_model_full_count",
+      "display_name": "Recovery Model FULL",
+      "description": "Whether the database recovery model is FULL. Required for transaction log backups and point-in-time recovery.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "FULL"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "ALTER DATABASE [dbname] SET RECOVERY FULL; then take a full backup to initialize log chain",
+      "cis_reference": null,
+      "gate_scope": "pillar"
+    },
+    {
+      "metric_id": "BAK-1.2",
+      "subcategory": "backup_wal",
+      "legacy_name": "log_backup_frequency",
+      "display_name": "Log Backup Frequency",
+      "description": "Frequency of transaction log backups for FULL recovery databases. Backups every 60 minutes or less limit data-loss exposure.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 60,
+        "unit": "minutes"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Schedule transaction log backups at least every hour using SQL Server Agent or Maintenance Plans",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.3",
+      "subcategory": "backup_wal",
+      "legacy_name": "log_backup_no_failures",
+      "display_name": "No Log Backup Failures (24h)",
+      "description": "Transaction log backup success over the last 24 hours. Failures break the log chain and prevent point-in-time recovery.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Check SQL Server Agent job history and msdb.dbo.backupset for failed log backups",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.4",
+      "subcategory": "backup_wal",
+      "legacy_name": "log_growth_check",
+      "display_name": "Log File Not Growing Uncontrolled",
+      "description": "Transaction log growth control. Sudden 50%+ growth signals a stalled log chain, long transactions, or AG sync issues.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Check log_reuse_wait_desc in sys.databases; ensure log backups are running and VLF count is managed",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.5",
+      "subcategory": "backup_wal",
+      "legacy_name": "vlf_count",
+      "display_name": "VLF Count Under Control",
+      "description": "Virtual Log File (VLF) count for the transaction log. High VLF counts (>1000) slow recovery and log backups.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 1000
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Shrink and grow log file in large increments to reduce VLF count",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.1",
+      "subcategory": "backup_dumps",
+      "legacy_name": "full_backup_schedule",
+      "display_name": "Full Backup Schedule Defined",
+      "description": "Whether a regular full backup schedule exists (weekly minimum). Without it, recovery options are limited to ad-hoc backups.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "daily",
+          "weekly",
+          "continuous"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Configure SQL Server Agent job or Maintenance Plan for regular full backups",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.2",
+      "subcategory": "backup_dumps",
+      "legacy_name": "last_full_backup_date",
+      "display_name": "Last Full Backup Age",
+      "description": "Age of the most recent successful full backup. Backups older than 7 days indicate stalled or failing backup jobs.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 168,
+        "unit": "hours"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Check msdb.dbo.backupset for recent full backups; verify SQL Agent jobs are succeeding",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.3",
+      "subcategory": "backup_dumps",
+      "legacy_name": "diff_backup_configured",
+      "display_name": "Differential Backup Configured",
+      "description": "Whether differential backups run between full backups. Reduces restore time and storage by limiting log replay.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Add differential backup jobs (daily) between weekly full backups to shorten restore time",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.4",
+      "subcategory": "backup_dumps",
+      "legacy_name": "backup_verification",
+      "display_name": "Backup Verification (RESTORE VERIFYONLY)",
+      "description": "Whether backups are validated with RESTORE VERIFYONLY. Catches corrupt or unrestorable backups before they're needed.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Add RESTORE VERIFYONLY step to backup jobs or use Ola Hallengren backup solution",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.1",
+      "subcategory": "backup_tools",
+      "legacy_name": "backup_compression",
+      "display_name": "Backup Compression Enabled",
+      "description": "Whether 'backup compression default' is on. Reduces backup size and I/O during BACKUP and RESTORE.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "EXEC sp_configure 'backup compression default', 1; RECONFIGURE;",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.2",
+      "subcategory": "backup_tools",
+      "legacy_name": "backup_encryption_enabled",
+      "display_name": "Backup Encryption",
+      "description": "Whether backup files are encrypted. Required to protect sensitive data on backup media and offsite copies.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql",
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Use WITH ENCRYPTION option in BACKUP DATABASE command or use TDE + backup to encrypted media",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.3",
+      "subcategory": "backup_tools",
+      "legacy_name": "enterprise_backup_solution",
+      "display_name": "Enterprise Backup Solution",
+      "description": "Whether an enterprise backup framework (Ola Hallengren, Redgate, or commercial) is in use rather than ad-hoc scripts.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Consider Ola Hallengren's Maintenance Solution (free) for enterprise-grade backup management",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.4",
+      "subcategory": "backup_tools",
+      "legacy_name": "msdb_backup_history",
+      "display_name": "Backup History Maintained",
+      "description": "Whether msdb backup history is retained long enough for reporting and audit. Aggressive cleanup hides backup gaps.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Ensure msdb cleanup jobs (sp_delete_backuphistory) do not purge too aggressively",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.1",
+      "subcategory": "backup_recovery",
+      "legacy_name": "rpo_target",
+      "display_name": "RPO Target Defined",
+      "description": "Whether a Recovery Point Objective (RPO) is documented. Drives backup frequency and replication design.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "rpo_5",
+          "rpo_15",
+          "rpo_60",
+          "rpo_240",
+          "rpo_1440",
+          "yes"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Define and document RPO target based on business requirements",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.2",
+      "subcategory": "backup_recovery",
+      "legacy_name": "rto_target",
+      "display_name": "RTO Target Defined",
+      "description": "Whether a Recovery Time Objective (RTO) is documented. Drives HA topology and restore procedure choices.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "rto_5",
+          "rto_15",
+          "rto_60",
+          "rto_240",
+          "rto_480",
+          "rto_1440",
+          "yes"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Define and document RTO target based on business requirements",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.3",
+      "subcategory": "backup_recovery",
+      "legacy_name": "restore_tested",
+      "display_name": "Restore Tested (90d)",
+      "description": "Whether the restore procedure has been exercised in the last 90 days. Untested restores often fail when needed.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Schedule regular restore tests to a non-production environment at least quarterly",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.4",
+      "subcategory": "backup_recovery",
+      "legacy_name": "ag_backup_preference",
+      "display_name": "AG Backup Preference Set",
+      "description": "AG backup preference setting. SECONDARY/PREFER_SECONDARY offloads backup I/O from the primary replica.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "SECONDARY",
+          "PREFER_SECONDARY"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Set AG backup preference: ALTER AVAILABILITY GROUP [agname] SET (AUTOMATED_BACKUP_PREFERENCE = SECONDARY_ONLY);",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.5",
+      "subcategory": "backup_recovery",
+      "legacy_name": "ag_secondary_health",
+      "display_name": "AG Secondary Healthy",
+      "description": "Sync state of the AG secondary replica. Required for failover readiness and offload reads.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "SYNCHRONIZED",
+          "SYNCHRONIZING"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Check sys.dm_hadr_availability_replica_states for AG health; investigate network and log send queue",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.1",
+      "subcategory": "backup_retention",
+      "legacy_name": "backup_retention_days",
+      "display_name": "Retention Policy Met",
+      "description": "Whether backup retention meets organizational policy (minimum 7 days of full backups). Required for compliance and rollback windows.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Configure backup retention in your backup solution to meet compliance requirements",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.2",
+      "subcategory": "backup_retention",
+      "legacy_name": "offsite_backup",
+      "display_name": "Offsite Backup Copy Exists",
+      "description": "Whether an offsite copy of backups exists. Protects against site loss; required for most DR plans.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure backup copy jobs to Azure Blob, S3, or secondary site",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.3",
+      "subcategory": "backup_retention",
+      "legacy_name": "backup_storage_monitoring",
+      "display_name": "Backup Storage Monitored",
+      "description": "Whether backup storage capacity is monitored with alerts. Full backup volumes silently break the backup chain.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure disk space monitoring on backup volumes with alerting",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.1",
+      "subcategory": "security_auth",
+      "legacy_name": "windows_auth_preferred",
+      "display_name": "Windows Auth Preferred",
+      "description": "Authentication mode. Windows Authentication leverages Kerberos/AD and avoids SQL password management.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "Windows Authentication Mode"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Use Windows Authentication Mode where possible for Kerberos/AD integration",
+      "cis_reference": "CIS 3.1"
+    },
+    {
+      "metric_id": "SEC-1.2",
+      "subcategory": "security_auth",
+      "legacy_name": "sa_account_disabled",
+      "display_name": "SA Login Disabled",
+      "description": "State of the 'sa' login. Should be disabled or renamed; default sa is a high-value target for brute-force attacks.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "ALTER LOGIN sa DISABLE; or rename to a non-default name",
+      "cis_reference": "CIS 3.2"
+    },
+    {
+      "metric_id": "SEC-1.3",
+      "subcategory": "security_auth",
+      "legacy_name": "login_auditing",
+      "display_name": "Login Auditing Enabled",
+      "description": "Whether login attempts are audited (at minimum failures). Required to detect credential-stuffing and brute-force activity.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "FAILURE",
+          "ALL"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Configure SQL Server Audit for login success/failure events",
+      "cis_reference": "CIS 3.3"
+    },
+    {
+      "metric_id": "SEC-1.4",
+      "subcategory": "security_auth",
+      "legacy_name": "password_policy_enforced",
+      "display_name": "Password Policy Enforced",
+      "description": "Whether SQL logins enforce CHECK_POLICY/CHECK_EXPIRATION. Without it, weak passwords and stale credentials can persist.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "ALTER LOGIN [loginname] WITH CHECK_POLICY = ON, CHECK_EXPIRATION = ON;",
+      "cis_reference": "CIS 3.4"
+    },
+    {
+      "metric_id": "SEC-1.5",
+      "subcategory": "security_auth",
+      "legacy_name": "orphaned_logins",
+      "display_name": "No Orphaned SQL Logins",
+      "description": "Presence of orphaned or unused SQL logins. Stale accounts widen the credential attack surface.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Review and remove unused SQL logins; use sp_change_users_login to fix orphaned users",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.1",
+      "subcategory": "security_encrypt",
+      "legacy_name": "tde_encrypted_db_count",
+      "display_name": "TDE Enabled",
+      "description": "Whether Transparent Data Encryption (TDE) protects at-rest data in sensitive databases. Required for compliance regimes covering PII/PHI.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 1
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable TDE: CREATE DATABASE ENCRYPTION KEY WITH ALGORITHM = AES_256; ALTER DATABASE ... SET ENCRYPTION ON;",
+      "cis_reference": "CIS 14.1"
+    },
+    {
+      "metric_id": "SEC-2.2",
+      "subcategory": "security_encrypt",
+      "legacy_name": "connection_encryption",
+      "display_name": "Connections Encrypted (TLS)",
+      "description": "Whether Force Protocol Encryption is on so all client connections use TLS. Required to protect credentials and query payloads in transit.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql",
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable Force Encryption in SQL Server Configuration Manager; configure valid SSL certificate",
+      "cis_reference": "CIS 3.13"
+    },
+    {
+      "metric_id": "SEC-2.3",
+      "subcategory": "security_encrypt",
+      "legacy_name": "always_encrypted",
+      "display_name": "Always Encrypted Considered",
+      "description": "Whether Always Encrypted is used for PII/sensitive columns. Keeps decryption keys outside the database engine.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Evaluate Always Encrypted for columns storing PII (SSN, credit cards, etc.)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.4",
+      "subcategory": "security_encrypt",
+      "legacy_name": "master_key_protected",
+      "display_name": "Database Master Key Protected",
+      "description": "Whether the Database Master Key (DMK) is backed up and stored securely. Lost DMKs make TDE/encryption-protected data unrecoverable.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Backup master key: BACKUP MASTER KEY TO FILE = '...' ENCRYPTION BY PASSWORD = '...';",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.5",
+      "subcategory": "security_encrypt",
+      "legacy_name": "tls_version",
+      "display_name": "TLS 1.2+ Required",
+      "description": "Minimum TLS version required by the server. TLS 1.0/1.1 contain known weaknesses; TLS 1.2+ is the modern baseline.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Disable TLS 1.0/1.1 via Windows registry settings; enable TLS 1.2 minimum",
+      "cis_reference": "CIS 3.13"
+    },
+    {
+      "metric_id": "SEC-3.1",
+      "subcategory": "security_audit",
+      "legacy_name": "server_audit_enabled",
+      "display_name": "SQL Server Audit Enabled",
+      "description": "Whether a SQL Server Audit specification exists and is running. Required for forensic record of security-relevant events.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Create server-level SQL Audit for FAILED_LOGIN_GROUP, SUCCESSFUL_LOGIN_GROUP, and DDL changes",
+      "cis_reference": "CIS 3.1"
+    },
+    {
+      "metric_id": "SEC-3.2",
+      "subcategory": "security_audit",
+      "legacy_name": "audit_ddl_changes",
+      "display_name": "DDL Changes Audited",
+      "description": "Whether DDL changes (CREATE/ALTER/DROP) are captured by SQL Audit. Required to track schema drift and unauthorized changes.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Add SCHEMA_OBJECT_CHANGE_GROUP and DATABASE_OBJECT_CHANGE_GROUP to audit specification",
+      "cis_reference": "CIS 3.3"
+    },
+    {
+      "metric_id": "SEC-3.3",
+      "subcategory": "security_audit",
+      "legacy_name": "audit_privileged_actions",
+      "display_name": "Privileged Actions Audited",
+      "description": "Whether sysadmin and permission-change events are captured by audit. Required to detect privilege escalation and role tampering.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Add SERVER_PERMISSION_CHANGE_GROUP, SERVER_ROLE_MEMBER_CHANGE_GROUP to server audit",
+      "cis_reference": "CIS 3.3"
+    },
+    {
+      "metric_id": "SEC-3.4",
+      "subcategory": "security_audit",
+      "legacy_name": "audit_destination_protected",
+      "display_name": "Audit Destination Protected",
+      "description": "Storage and ACLs of the audit log target. Audit data on shared/world-readable paths can be tampered with or exfiltrated.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Store audit files on dedicated volume with permissions restricted to SQL Server service account",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.5",
+      "subcategory": "security_audit",
+      "legacy_name": "c2_audit_trace",
+      "display_name": "C2/Common Criteria Not Blocking",
+      "description": "C2 audit mode state. C2 mode shuts the instance down when its trace volume fills; SQL Audit is the supported alternative.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": false
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "EXEC sp_configure 'c2 audit mode', 0; RECONFIGURE; — use SQL Audit instead",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-4.1",
+      "subcategory": "security_access",
+      "legacy_name": "sysadmin_login_count",
+      "display_name": "Sysadmin Role Minimal",
+      "description": "Number of sysadmin role members. Bloated sysadmin membership widens blast radius and breaks least-privilege.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 5
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Remove unnecessary members from SysAdmin role; use least-privilege roles instead",
+      "cis_reference": "CIS 4.2"
+    },
+    {
+      "metric_id": "SEC-4.2",
+      "subcategory": "security_access",
+      "legacy_name": "builtin_administrators",
+      "display_name": "BUILTIN\\Administrators Not Sysadmin",
+      "description": "Whether BUILTIN\\Administrators is excluded from the sysadmin role. Membership grants every local OS admin DB superuser rights.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "EXEC sp_dropsrvrolemember 'BUILTIN\\Administrators', 'sysadmin';",
+      "cis_reference": "CIS 4.3"
+    },
+    {
+      "metric_id": "SEC-4.3",
+      "subcategory": "security_access",
+      "legacy_name": "cross_db_chaining",
+      "display_name": "Cross-DB Ownership Chaining Off",
+      "description": "Server-level state of cross-database ownership chaining. When on, it lets a database escalate privileges across databases.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": false
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "EXEC sp_configure 'cross db ownership chaining', 0; RECONFIGURE;",
+      "cis_reference": "CIS 2.1"
+    },
+    {
+      "metric_id": "SEC-4.4",
+      "subcategory": "security_access",
+      "legacy_name": "trustworthy_off",
+      "display_name": "TRUSTWORTHY Off for User DBs",
+      "description": "User databases with TRUSTWORTHY ON. TRUSTWORTHY combined with high-privileged owners is a known privilege-escalation vector.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "ALTER DATABASE [dbname] SET TRUSTWORTHY OFF; — use signing for cross-database access instead",
+      "cis_reference": "CIS 2.15"
+    },
+    {
+      "metric_id": "SEC-4.5",
+      "subcategory": "security_access",
+      "legacy_name": "xp_cmdshell_disabled",
+      "display_name": "xp_cmdshell Disabled",
+      "description": "State of xp_cmdshell. When on, T-SQL can execute arbitrary OS commands as the SQL service account.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": false
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "EXEC sp_configure 'xp_cmdshell', 0; RECONFIGURE;",
+      "cis_reference": "CIS 2.17"
+    },
+    {
+      "metric_id": "CAP-1.1",
+      "subcategory": "capacity_storage",
+      "legacy_name": "total_data_size_mb",
+      "display_name": "Data File Usage Below 85%",
+      "description": "Data file fill ratio. Exceeding 85% without headroom risks autogrowth stalls and out-of-space failures.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 85,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Pre-grow data files to avoid auto-growth events; monitor with sys.dm_db_file_space_usage",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.2",
+      "subcategory": "capacity_storage",
+      "legacy_name": "autogrowth_fixed_size",
+      "display_name": "Autogrowth in Fixed MB (Not %)",
+      "description": "Whether data/log file autogrowth uses fixed MB rather than percentage. Percentage growth scales unpredictably and causes I/O storms.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set autogrowth to fixed MB: ALTER DATABASE [dbname] MODIFY FILE (NAME='...', FILEGROWTH=512MB);",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.3",
+      "subcategory": "capacity_storage",
+      "legacy_name": "tempdb_data_files",
+      "display_name": "TempDB Properly Configured",
+      "description": "TempDB file layout. Multiple equally-sized files (up to 8) reduce allocation contention on busy workloads.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Add TempDB data files equal to number of logical CPUs (max 8); use trace flag 1117/1118 for older versions",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.4",
+      "subcategory": "capacity_storage",
+      "legacy_name": "log_file_usage",
+      "display_name": "Log File Usage Under Control",
+      "description": "Transaction log fill ratio. Exceeding 80% indicates a log_reuse_wait issue or insufficient log backups.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 80,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Check log_reuse_wait_desc; ensure log backups are running for FULL recovery model databases",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.5",
+      "subcategory": "capacity_storage",
+      "legacy_name": "disk_space_available",
+      "display_name": "Disk Space Adequate",
+      "description": "Free space on the database volume. Below 20% headroom raises the risk of autogrowth failures and outages.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 20,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql",
+        "zabbix",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Monitor disk space via SQL Server DMVs or OS monitoring; archive/purge old data",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.1",
+      "subcategory": "capacity_connections",
+      "legacy_name": "user_connections",
+      "display_name": "Connection Count Monitored",
+      "description": "Active connections relative to max worker threads. Approaching the limit causes new connections to wait or fail.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 80,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Monitor sys.dm_exec_sessions; consider connection pooling at application tier",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.2",
+      "subcategory": "capacity_connections",
+      "legacy_name": "connection_pooling",
+      "display_name": "Connection Pooling in Use",
+      "description": "Whether applications connect through pooled drivers (ADO.NET/JDBC/ODBC). Avoids connection storms and excess login overhead.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Ensure application framework connection pooling is enabled and correctly sized",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.3",
+      "subcategory": "capacity_connections",
+      "legacy_name": "max_worker_threads",
+      "display_name": "Max Worker Threads Configured",
+      "description": "Max worker threads setting. 0 (auto) or a CPU-aware override prevents thread starvation under load.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "EXEC sp_configure 'max worker threads', 0; RECONFIGURE; (let SQL Server auto-configure)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.4",
+      "subcategory": "capacity_connections",
+      "legacy_name": "blocked_process_threshold",
+      "display_name": "Blocked Process Threshold Set",
+      "description": "Blocked process threshold setting. A non-zero value (<=5s) emits blocked-process reports for investigation.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 5,
+        "unit": "seconds"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "EXEC sp_configure 'blocked process threshold', 5; RECONFIGURE;",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.1",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "index_fragmentation",
+      "display_name": "Index Fragmentation Managed",
+      "description": "Index fragmentation level. Above 30% degrades range scans and bloats buffer pool usage.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 30,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Schedule index rebuild/reorganize jobs (Ola Hallengren recommended); monitor sys.dm_db_index_physical_stats",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.2",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "statistics_freshness",
+      "display_name": "Statistics Up to Date",
+      "description": "Statistics freshness. Stale stats produce poor cardinality estimates and bad query plans.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable AUTO_UPDATE_STATISTICS; schedule manual UPDATE STATISTICS for large tables",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.3",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "dbcc_checkdb_recent",
+      "display_name": "DBCC CHECKDB Recent",
+      "description": "Recency of a clean DBCC CHECKDB run. Without regular integrity checks, on-disk corruption can spread silently.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 168,
+        "unit": "hours"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Schedule weekly DBCC CHECKDB; review MSDB.dbo.suspect_pages for corruption",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.4",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "auto_update_stats_async",
+      "display_name": "Auto Statistics Async Updates",
+      "description": "Whether AUTO_UPDATE_STATISTICS_ASYNC is on. Avoids synchronous stats updates blocking critical query compilations.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "ALTER DATABASE [dbname] SET AUTO_UPDATE_STATISTICS_ASYNC ON;",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.5",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "page_verify_checksum",
+      "display_name": "Page Verify CHECKSUM",
+      "description": "Database PAGE_VERIFY mode. CHECKSUM detects torn writes and on-disk corruption at read time.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "CHECKSUM"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "ALTER DATABASE [dbname] SET PAGE_VERIFY CHECKSUM;",
+      "cis_reference": "CIS 2.21"
+    },
+    {
+      "metric_id": "CAP-3.6",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "database_compatibility_levels",
+      "display_name": "Compatibility Level Current",
+      "description": "Database compatibility level versus engine version. Lagging compat levels miss optimizer improvements.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "ALTER DATABASE [dbname] SET COMPATIBILITY_LEVEL = 160; (for SQL Server 2025)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.1",
+      "subcategory": "capacity_planning",
+      "legacy_name": "memory_utilization_pct",
+      "display_name": "Max Server Memory Configured",
+      "description": "Whether 'max server memory' is bounded below the OS total. The default leaves no headroom for the OS and other services.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "EXEC sp_configure 'max server memory', [total_RAM_MB - OS_reserve_MB]; RECONFIGURE;",
+      "cis_reference": "CIS 2.4"
+    },
+    {
+      "metric_id": "CAP-4.2",
+      "subcategory": "capacity_planning",
+      "legacy_name": "maxdop_configured",
+      "display_name": "MAXDOP Configured",
+      "description": "Whether MAXDOP is explicitly set. The default (0) lets a single query consume every scheduler and starve others.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "EXEC sp_configure 'max degree of parallelism', [appropriate_value]; RECONFIGURE; (typically half of NUMA node CPUs)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.3",
+      "subcategory": "capacity_planning",
+      "legacy_name": "cost_threshold_parallelism",
+      "display_name": "Cost Threshold for Parallelism Set",
+      "description": "Cost threshold for parallelism. Default of 5 over-parallelizes trivial queries; raising the threshold avoids wasted CXPACKET waits.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 25
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "EXEC sp_configure 'cost threshold for parallelism', 50; RECONFIGURE;",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.4",
+      "subcategory": "capacity_planning",
+      "legacy_name": "log_reuse_wait",
+      "display_name": "Log Reuse Wait Normal",
+      "description": "log_reuse_wait_desc value. Anything other than NOTHING/LOG_BACKUP signals a stalled log chain (open tx, replica lag, etc.).",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "NOTHING",
+          "LOG_BACKUP"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate log_reuse_wait_desc in sys.databases; address open transactions or AG sync issues",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.1",
+      "subcategory": "perf_cache",
+      "legacy_name": "plan_cache_single_use_pct",
+      "display_name": "Plan Cache Hit Ratio High",
+      "description": "Plan cache hit ratio. Below ~95% indicates frequent hard compiles, often from ad-hoc unparameterized queries.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 95,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase plan cache size (max server memory); use parameterized queries; enable Optimize for Ad Hoc Workloads",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.2",
+      "subcategory": "perf_cache",
+      "legacy_name": "page_life_expectancy",
+      "display_name": "Page Life Expectancy High",
+      "description": "Page Life Expectancy. Sustained PLE under ~300s per 4GB NUMA node signals memory pressure.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 300,
+        "unit": "seconds"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase max server memory; investigate large table scans; review buffer pool extension",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.3",
+      "subcategory": "perf_cache",
+      "legacy_name": "optimize_adhoc_workloads",
+      "display_name": "Optimize for Ad Hoc Workloads",
+      "description": "Whether 'optimize for ad hoc workloads' is on. Avoids storing full plans for one-off queries that bloat the plan cache.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "EXEC sp_configure 'optimize for ad hoc workloads', 1; RECONFIGURE;",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.4",
+      "subcategory": "perf_cache",
+      "legacy_name": "buffer_pool_extension",
+      "display_name": "Buffer Pool Extension Considered",
+      "description": "Whether Buffer Pool Extension on SSD is in use when RAM is constrained. A stopgap when physical memory cannot be increased.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql",
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Consider BPE on NVMe SSD if physical RAM cannot be increased",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.5",
+      "subcategory": "perf_cache",
+      "legacy_name": "memory_grant_feedback",
+      "display_name": "Intelligent Query Processing Enabled",
+      "description": "Whether the compat level enables Intelligent Query Processing (Memory Grant Feedback, batch-mode-on-rowstore, etc.).",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set compatibility level >= 150 (SQL Server 2019) to enable IQP; use QUERY_OPTIMIZER_COMPATIBILITY_LEVEL hint",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.1",
+      "subcategory": "perf_queries",
+      "legacy_name": "query_store_enabled_count",
+      "display_name": "Query Store Enabled",
+      "description": "Whether Query Store is on for user databases. Required for plan history, regression detection, and forced plans.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "ON",
+          "READ_WRITE"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "ALTER DATABASE [dbname] SET QUERY_STORE = ON (OPERATION_MODE = READ_WRITE);",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.2",
+      "subcategory": "perf_queries",
+      "legacy_name": "missing_index_count",
+      "display_name": "Missing Indexes Reviewed",
+      "description": "High-impact missing-index recommendations from sys.dm_db_missing_index_details. Frequent recommendations point to schema/query gaps.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0,
+        "unit": "high_impact_missing_indexes"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Review sys.dm_db_missing_index_group_stats; implement high-impact missing indexes after testing",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.3",
+      "subcategory": "perf_queries",
+      "legacy_name": "top_wait_stats",
+      "display_name": "No Critical Wait Types Dominant",
+      "description": "Whether any critical wait type (PAGEIOLATCH, RESOURCE_SEMAPHORE, CXPACKET) dominates the wait profile.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Review sys.dm_os_wait_stats; address top waits (memory pressure, I/O, parallelism, locking)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.4",
+      "subcategory": "perf_queries",
+      "legacy_name": "long_running_queries",
+      "display_name": "No Chronic Long-Running Queries",
+      "description": "Queries in Query Store whose average duration exceeds 60s. Persistent slow queries usually need a plan or index fix.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 60,
+        "unit": "seconds"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Use Query Store Top Resource Consuming Queries report; apply query hints or plan forcing if needed",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.5",
+      "subcategory": "perf_queries",
+      "legacy_name": "plan_forcing_used",
+      "display_name": "Plan Regression Monitoring",
+      "description": "Whether the Query Store Regressed Queries report is reviewed regularly. Catches new plans that perform worse than prior ones.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Review Query Store Regressed Queries; use sp_query_store_force_plan for critical plan stabilization",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.6",
+      "subcategory": "perf_queries",
+      "legacy_name": "parameterization",
+      "display_name": "Database Parameterization",
+      "description": "Database parameterization mode. SIMPLE fits most OLTP; FORCED helps workloads with heavy ad-hoc SQL.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "SIMPLE",
+          "FORCED"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Evaluate FORCED parameterization for OLTP workloads with many ad-hoc queries",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.7",
+      "subcategory": "perf_queries",
+      "legacy_name": "auto_create_stats",
+      "display_name": "Auto Create Statistics On",
+      "description": "Whether AUTO_CREATE_STATISTICS is on. Without it, the optimizer lacks column-level statistics needed for good plans.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "ALTER DATABASE [dbname] SET AUTO_CREATE_STATISTICS ON;",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.1",
+      "subcategory": "perf_locks",
+      "legacy_name": "blocking_chains",
+      "display_name": "No Chronic Blocking Chains",
+      "description": "Presence of long-lived blocking chains in sys.dm_exec_requests. Persistent chains stall throughput and time out waiters.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate blocking head using sys.dm_exec_requests; review long-running transactions and index design",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.2",
+      "subcategory": "perf_locks",
+      "legacy_name": "deadlock_count_24h",
+      "display_name": "No Deadlocks (24h)",
+      "description": "Deadlocks captured by the system_health XE session in the last 24 hours. Recurring deadlocks point to lock-ordering or design issues.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable trace flag 1222 or use system_health XE session to capture deadlock graphs; fix lock ordering",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.3",
+      "subcategory": "perf_locks",
+      "legacy_name": "rcsi_or_snapshot",
+      "display_name": "Row Versioning Isolation Considered",
+      "description": "Whether RCSI or Snapshot isolation is on. Cuts reader/writer blocking but adds tempdb version-store load.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "ALTER DATABASE [dbname] SET READ_COMMITTED_SNAPSHOT ON; (requires tempdb space for version store)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.4",
+      "subcategory": "perf_locks",
+      "legacy_name": "lock_pages_in_memory",
+      "display_name": "Lock Pages in Memory (LPIM)",
+      "description": "Lock Pages in Memory privilege state. Recommended for OLTP servers where the OS may page out the buffer pool.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable LPIM Windows privilege for SQL Server service account on OLTP servers with high memory pressure",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.1",
+      "subcategory": "perf_replication",
+      "legacy_name": "ag_sync_lag",
+      "display_name": "AG Synchronization Lag",
+      "description": "AG log send queue size in seconds of data. Sustained growth signals network or secondary I/O bottlenecks.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 30,
+        "unit": "seconds"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Check sys.dm_hadr_database_replica_states log_send_queue_size; investigate network bandwidth",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.2",
+      "subcategory": "perf_replication",
+      "legacy_name": "ag_redo_queue_size",
+      "display_name": "AG Redo Queue Size",
+      "description": "AG redo queue (log received but not yet applied to secondary). High redo queues delay failover RPO and read-only workloads.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 60,
+        "unit": "seconds"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Increase redo thread parallelism; check secondary disk I/O performance",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.3",
+      "subcategory": "perf_replication",
+      "legacy_name": "ag_automatic_failover",
+      "display_name": "AG Automatic Failover Configured",
+      "description": "Whether the AG has a synchronous replica with FAILOVER_MODE = AUTOMATIC. Required for hands-free HA failover.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Configure synchronous replica with FAILOVER_MODE = AUTOMATIC for HA scenarios",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.4",
+      "subcategory": "perf_replication",
+      "legacy_name": "replication_distributor_latency",
+      "display_name": "Transactional Replication Latency",
+      "description": "Transactional replication distributor-to-subscriber latency. Sustained latency >30s indicates an unhealthy distributor or subscriber.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 30,
+        "unit": "seconds"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Check Replication Monitor for latency; review distributor transaction count and agent performance",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.1",
+      "subcategory": "future_version",
+      "legacy_name": "db_version",
+      "display_name": "Current SQL Server Version",
+      "description": "Major SQL Server version. Out-of-support versions stop receiving security and stability updates.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 16
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Plan upgrade to SQL Server 2019 or 2022; SQL Server 2014 reached end of support",
+      "cis_reference": null,
+      "gate_scope": "pillar"
+    },
+    {
+      "metric_id": "FUT-1.2",
+      "subcategory": "future_version",
+      "legacy_name": "latest_cu_applied",
+      "display_name": "Latest Cumulative Update Applied",
+      "description": "Recency of the applied Cumulative Update. CUs older than ~6 months miss security patches and bug fixes.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Download and apply latest CU from Microsoft Update Catalog; test in non-production first",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.3",
+      "subcategory": "future_version",
+      "legacy_name": "desupport_timeline",
+      "display_name": "No Desupport Risk",
+      "description": "Time remaining before mainstream support ends. Less than 12 months requires an active upgrade plan.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Review Microsoft SQL Server support lifecycle page; plan upgrade timeline",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.4",
+      "subcategory": "future_version",
+      "legacy_name": "patch_documentation",
+      "display_name": "Patch Level Documented",
+      "description": "Whether applied CUs and hotfixes are tracked in change management. Required for audit, rollback, and incident triage.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Maintain patch history in CMDB or change management tool",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-2.1",
+      "subcategory": "future_config",
+      "legacy_name": "ag_or_fci_configured",
+      "display_name": "HA Technology Configured",
+      "description": "Whether an Always On AG or FCI is deployed for HA. Without one, an instance failure means manual recovery.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Deploy Always On AG for read-scale and HA, or FCI for shared-disk failover clustering",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-2.2",
+      "subcategory": "future_config",
+      "legacy_name": "instant_file_init",
+      "display_name": "Instant File Initialization Enabled",
+      "description": "Whether the SQL service account has Perform Volume Maintenance Tasks. Required for instant file initialization on data file growth.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql",
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Grant 'Perform Volume Maintenance Tasks' to SQL Server service account; restart SQL Server",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-2.3",
+      "subcategory": "future_config",
+      "legacy_name": "dedicated_admin_connection",
+      "display_name": "DAC Enabled",
+      "description": "Whether the Dedicated Administrator Connection is reachable. Provides a recovery channel when normal connections are blocked.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "EXEC sp_configure 'remote admin connections', 1; RECONFIGURE; to enable remote DAC",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.1",
+      "subcategory": "future_planning",
+      "legacy_name": "upgrade_plan",
+      "display_name": "Upgrade Plan Exists",
+      "description": "Whether a documented SQL Server upgrade plan exists. Without it, end-of-support arrives as a surprise.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Plan upgrade using Microsoft Upgrade Advisor or Database Experimentation Assistant (DEA)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.2",
+      "subcategory": "future_planning",
+      "legacy_name": "deprecated_features_in_use",
+      "display_name": "No Deprecated Features in Use",
+      "description": "Hits on deprecated features in sys.dm_os_performance_counters. Deprecated usage blocks future upgrades.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Query sys.dm_os_performance_counters WHERE object_name LIKE '%Deprecated%'; fix before upgrading",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.3",
+      "subcategory": "future_planning",
+      "legacy_name": "surface_area_config",
+      "display_name": "Surface Area Minimized",
+      "description": "Surface area exposure from optional features (OLE Automation, CLR, ad-hoc distributed queries). Each one widens the attack surface.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Disable unused features: Ole Automation Procedures, CLR, Ad Hoc Distributed Queries via sp_configure",
+      "cis_reference": "CIS 2.7"
+    },
+    {
+      "metric_id": "FUT-3.4",
+      "subcategory": "future_planning",
+      "legacy_name": "dea_assessment",
+      "display_name": "DEA Assessment Run",
+      "description": "Whether DEA or MAP Toolkit has been used to assess upgrade impact. Catches workload regressions before the upgrade lands.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Download Microsoft DEA from GitHub and run workload comparison analysis before upgrade",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-3.5",
+      "subcategory": "future_planning",
+      "legacy_name": "linked_servers_minimized",
+      "display_name": "Linked Servers Minimized",
+      "description": "Number of linked servers. Each linked server widens the trust boundary and complicates upgrades and security review.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 3
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Review and remove unused linked servers; avoid linked servers to production systems where possible",
+      "cis_reference": "CIS 2.9"
+    },
+    {
+      "metric_id": "FUT-4.1",
+      "subcategory": "future_foundation",
+      "legacy_name": "extended_events_session",
+      "display_name": "Extended Events Monitoring Active",
+      "description": "State of system_health and other diagnostic XE sessions. Without them, blocking and deadlock evidence is lost.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Ensure system_health XE session is running; create additional sessions for performance troubleshooting",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.2",
+      "subcategory": "future_foundation",
+      "legacy_name": "alerting_configured",
+      "display_name": "Database Alerting Configured",
+      "description": "Whether SQL Agent alerts cover critical conditions (I/O errors 823/824/825, drive space, job failures). Required for proactive incident response.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql",
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Configure SQL Server Agent alerts for severity 19-25 errors and I/O error codes 823, 824, 825",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.3",
+      "subcategory": "future_foundation",
+      "legacy_name": "query_store_retention",
+      "display_name": "Query Store Retention Adequate",
+      "description": "Query Store retention window. Less than 30 days makes plan-regression and trend analysis unreliable.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 30,
+        "unit": "days"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "ALTER DATABASE [dbname] SET QUERY_STORE (DATA_FLUSH_INTERVAL_SECONDS = 900, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30));",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.4",
+      "subcategory": "future_foundation",
+      "legacy_name": "documentation_current",
+      "display_name": "Database Documentation Current",
+      "description": "Whether architecture diagrams and operational runbooks are current. Outdated docs slow incident response and onboarding.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Maintain up-to-date architecture diagrams, runbooks, and change log",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.6",
+      "subcategory": "backup_wal",
+      "legacy_name": "recovery_model_simple_count",
+      "display_name": "Simple Recovery Databases",
+      "description": "Number of databases using SIMPLE recovery. SIMPLE forfeits log backups and point-in-time recovery.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Consider FULL recovery model for production databases",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.6",
+      "subcategory": "capacity_storage",
+      "legacy_name": "total_log_size_mb",
+      "display_name": "Total Log Size",
+      "description": "Total transaction log file size on disk. Used to track growth trends and capacity planning.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Monitor log file growth; ensure regular log backups",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.5",
+      "subcategory": "backup_dumps",
+      "legacy_name": "databases_without_recent_backup",
+      "display_name": "All Databases Backed Up",
+      "description": "Databases without a full backup in the last 24 hours. Any gap means at least one database is unrecoverable.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Schedule full backups for all production databases",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.6",
+      "subcategory": "security_auth",
+      "legacy_name": "authentication_mode",
+      "display_name": "Windows Authentication Only",
+      "description": "Server-level authentication mode. Windows-only mode disables SQL logins and removes a credential-management surface.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "windows-only"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Change to Windows Authentication mode via SQL Server Configuration Manager",
+      "cis_reference": "CIS 3.1"
+    },
+    {
+      "metric_id": "SEC-4.6",
+      "subcategory": "security_access",
+      "legacy_name": "clr_disabled",
+      "display_name": "CLR Integration Disabled",
+      "description": "State of 'clr enabled'. CLR loaded code runs in-process; should be off unless an application explicitly needs it.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Disable CLR: EXEC sp_configure 'clr enabled', 0; RECONFIGURE;",
+      "cis_reference": "CIS 2.9"
+    },
+    {
+      "metric_id": "CAP-1.7",
+      "subcategory": "capacity_storage",
+      "legacy_name": "data_file_growth_pct",
+      "display_name": "Data File Growth Fixed",
+      "description": "Whether any data file still uses percentage-based growth. Percentage growth scales unpredictably under heavy writes.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Change data file growth to fixed size: ALTER DATABASE ... MODIFY FILE (FILEGROWTH = 256MB)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.8",
+      "subcategory": "perf_queries",
+      "legacy_name": "optimize_adhoc",
+      "display_name": "Optimize for Ad Hoc Workloads",
+      "description": "Whether 'optimize for ad hoc workloads' is on. Avoids storing full plans for one-off queries that bloat the plan cache.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "EXEC sp_configure 'optimize for ad hoc workloads', 1; RECONFIGURE;",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.6",
+      "subcategory": "perf_cache",
+      "legacy_name": "disk_latency",
+      "display_name": "Disk Latency Acceptable",
+      "description": "Maximum read latency on database files. Above ~20ms typically indicates I/O contention or storage saturation.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 20
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate high disk latency — consider faster storage (SSD/NVMe) or reducing I/O pressure",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-1.6",
+      "subcategory": "future_version",
+      "legacy_name": "patch_level",
+      "display_name": "Patch Level Current",
+      "description": "Service pack and cumulative update level reported by the engine. Used to compare against the latest available CU.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Apply the latest Cumulative Update for your SQL Server version",
+      "cis_reference": null
+    }
+  ],
+  "consistency_rules": [],
+  "technology": "sqlserver",
+  "technology_version": "2022"
+}

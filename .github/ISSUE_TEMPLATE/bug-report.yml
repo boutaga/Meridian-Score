@@ -1,0 +1,30 @@
+name: Bug report
+description: The engine, the validator, the simulator or a script misbehaves
+title: "[bug] <short description>"
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Package version and catalog version
+      placeholder: "1.16.0, PostgreSQL catalog 1.13.0"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: Values map or sample file, options passed to `calculate`, command run.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: payload
+    attributes:
+      label: Payload checker output (if the issue involves collected values)
+      description: "`node scripts/check-payload.js <technology> <payload.json>`"

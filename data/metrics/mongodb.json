@@ -1,0 +1,2784 @@
+{
+  "version": "1.2.1",
+  "maturity": "draft",
+  "description": "MongoDB 8 health metric catalog. Derived from dbi services scoring framework v0.30+. Adapted for document database architecture.",
+  "release_notes": "v1.2.1 (2026-09-23): catalog maturity label added (draft: not yet reviewed by a technology leader, neither for collection nor for scoring). No metric, threshold, weight or rule change. v1.2.0: schema-ready for consistency_rules (rules deferred to Technology Leader work). v1.1.0: Subcategory point allocations within Capacity, Performance, and Future-Proofing pillars differ from the architecture specification (SCORING_SYSTEM_ARCHITECTURE.md section 2.3). These splits have been stable since v1.0.0 and are flagged for tech-leader review. See docs/guides/metric-placement-review.md for details.",
+  "pillars": {
+    "backup": {
+      "name": "Backup & Recovery",
+      "maxPoints": 20,
+      "order": 1,
+      "icon": "shield"
+    },
+    "security": {
+      "name": "Security",
+      "maxPoints": 20,
+      "order": 2,
+      "icon": "lock"
+    },
+    "capacity": {
+      "name": "Capacity",
+      "maxPoints": 20,
+      "order": 3,
+      "icon": "chart-bar"
+    },
+    "performance": {
+      "name": "Performance",
+      "maxPoints": 20,
+      "order": 4,
+      "icon": "lightning"
+    },
+    "futureproof": {
+      "name": "Future-Proofing",
+      "maxPoints": 20,
+      "order": 5,
+      "icon": "rocket"
+    }
+  },
+  "subcategories": {
+    "backup_wal": {
+      "pillar": "backup",
+      "name": "Oplog & Continuity",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "backup_dumps": {
+      "pillar": "backup",
+      "name": "Scheduled Backups",
+      "maxPoints": 4,
+      "order": 2
+    },
+    "backup_tools": {
+      "pillar": "backup",
+      "name": "Backup Tools",
+      "maxPoints": 4,
+      "order": 3
+    },
+    "backup_recovery": {
+      "pillar": "backup",
+      "name": "Recovery Readiness",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "backup_retention": {
+      "pillar": "backup",
+      "name": "Retention Compliance",
+      "maxPoints": 3,
+      "order": 5
+    },
+    "security_auth": {
+      "pillar": "security",
+      "name": "Authentication",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "security_encrypt": {
+      "pillar": "security",
+      "name": "Encryption",
+      "maxPoints": 5,
+      "order": 2
+    },
+    "security_audit": {
+      "pillar": "security",
+      "name": "Audit & Logging",
+      "maxPoints": 5,
+      "order": 3
+    },
+    "security_access": {
+      "pillar": "security",
+      "name": "Access Control",
+      "maxPoints": 5,
+      "order": 4
+    },
+    "capacity_storage": {
+      "pillar": "capacity",
+      "name": "Storage",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "capacity_connections": {
+      "pillar": "capacity",
+      "name": "Connections",
+      "maxPoints": 5,
+      "order": 2
+    },
+    "capacity_maintenance": {
+      "pillar": "capacity",
+      "name": "Maintenance",
+      "maxPoints": 6,
+      "order": 3
+    },
+    "capacity_planning": {
+      "pillar": "capacity",
+      "name": "Planning",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "perf_cache": {
+      "pillar": "performance",
+      "name": "Caching",
+      "maxPoints": 5,
+      "order": 1
+    },
+    "perf_queries": {
+      "pillar": "performance",
+      "name": "Query Performance",
+      "maxPoints": 7,
+      "order": 2
+    },
+    "perf_locks": {
+      "pillar": "performance",
+      "name": "Locking",
+      "maxPoints": 4,
+      "order": 3
+    },
+    "perf_replication": {
+      "pillar": "performance",
+      "name": "Replication",
+      "maxPoints": 4,
+      "order": 4
+    },
+    "future_version": {
+      "pillar": "futureproof",
+      "name": "Version Currency",
+      "maxPoints": 7,
+      "order": 1
+    },
+    "future_config": {
+      "pillar": "futureproof",
+      "name": "Configuration",
+      "maxPoints": 3,
+      "order": 2
+    },
+    "future_planning": {
+      "pillar": "futureproof",
+      "name": "Upgrade Planning",
+      "maxPoints": 6,
+      "order": 3
+    },
+    "future_foundation": {
+      "pillar": "futureproof",
+      "name": "Health Foundation",
+      "maxPoints": 4,
+      "order": 4
+    }
+  },
+  "metrics": [
+    {
+      "metric_id": "BAK-1.1",
+      "subcategory": "backup_wal",
+      "legacy_name": "oplog_window_hours",
+      "display_name": "Oplog Window Sufficient",
+      "description": "Length of replication history retained in the oplog. A short window risks forcing full resyncs after secondaries fall behind.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 24,
+        "unit": "hours"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase oplog size: rs.printReplicationInfo() to check; set oplogSizeMB in mongod.conf or replSetResizeOplog command",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.2",
+      "subcategory": "backup_wal",
+      "legacy_name": "oplog_size_mb",
+      "display_name": "Oplog Size Configured",
+      "description": "Whether oplog size (replication.oplogSizeMB) is explicit. Relying on the 5%-of-disk default leaves the oplog window unpredictable.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set replication.oplogSizeMB in mongod.conf based on replication lag and write volume",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.3",
+      "subcategory": "backup_wal",
+      "legacy_name": "oplog_no_gaps",
+      "display_name": "Oplog Continuity",
+      "description": "Continuity of the oplog. Gaps or holes break secondary sync and force a full initial resync.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate via rs.printReplicationInfo(); consider increasing oplog size to prevent truncation under heavy writes",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.4",
+      "subcategory": "backup_wal",
+      "legacy_name": "pitr_via_oplog",
+      "display_name": "PITR via Oplog Feasible",
+      "description": "Whether oplog replay can deliver point-in-time recovery within RPO. Requires oplog window to span the gap between backups.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Ensure oplog window exceeds RPO target; document oplog-based PITR procedure",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.5",
+      "subcategory": "backup_wal",
+      "legacy_name": "oplog_retention_atlas",
+      "display_name": "Oplog Retention (Atlas)",
+      "description": "Atlas continuous-backup oplog retention. Determines the PITR window available from Cloud Backup.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 24,
+        "unit": "hours"
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": [
+        "atlas"
+      ],
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Configure oplog retention hours in Atlas continuous backup settings",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.1",
+      "subcategory": "backup_dumps",
+      "legacy_name": "mongodump_schedule",
+      "display_name": "Backup Schedule Defined",
+      "description": "Cadence of recurring backups (mongodump, Atlas, or PBM). Required to bound data loss to the schedule interval.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "daily",
+          "hourly",
+          "continuous",
+          "atlas"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Implement and document a backup schedule (daily minimum); prefer PBM or Atlas for production",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.2",
+      "subcategory": "backup_dumps",
+      "legacy_name": "last_backup_age_hours",
+      "display_name": "Last Backup Age",
+      "description": "Time elapsed since the last successful backup. Excessive age means a stale recovery point and growing data-loss exposure.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 24,
+        "unit": "hours"
+      },
+      "sources": [
+        "manual",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Verify backup jobs are completing successfully; check PBM status or Atlas backup history",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.3",
+      "subcategory": "backup_dumps",
+      "legacy_name": "atlas_backup_enabled",
+      "display_name": "Atlas Backup Active",
+      "description": "Whether Atlas Cloud Backup (continuous or snapshot) is on. Required for managed PITR and snapshot recovery on Atlas.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": [
+        "atlas"
+      ],
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Enable Cloud Backup in Atlas cluster settings; configure snapshot frequency and retention",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-2.4",
+      "subcategory": "backup_dumps",
+      "legacy_name": "backup_verification",
+      "display_name": "Backup Verification",
+      "description": "Periodic restore-test verification of backup integrity (mongorestore drill). Without it, restore failures are discovered at the worst possible time.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Schedule periodic restore tests to validate backup integrity",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.1",
+      "subcategory": "backup_tools",
+      "legacy_name": "pbm_installed",
+      "display_name": "Percona Backup for MongoDB",
+      "description": "Use of Percona Backup for MongoDB (PBM). Recommended for consistent self-managed replica/sharded cluster backups with PITR.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": [
+        "self-managed"
+      ],
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Deploy Percona Backup for MongoDB for consistent physical backups with PITR support",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.2",
+      "subcategory": "backup_tools",
+      "legacy_name": "pitr_capability",
+      "display_name": "PITR Capability Enabled",
+      "description": "Whether point-in-time recovery is available (PBM PITR or Atlas continuous backup). Without it, recovery snaps to the last full backup.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable PITR in PBM (pitr.enabled: true in pbm config) or Atlas continuous backup",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.3",
+      "subcategory": "backup_tools",
+      "legacy_name": "backup_encryption",
+      "display_name": "Backup Encryption",
+      "description": "Encryption at rest for backup artifacts. Required where backup media may travel offsite or compliance demands it.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Use PBM with encrypted storage or Atlas Cloud Backup (encrypted by default)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-3.4",
+      "subcategory": "backup_tools",
+      "legacy_name": "mongodump_oplog",
+      "display_name": "mongodump with --oplog",
+      "description": "Use of mongodump --oplog on replica sets. Required for a consistent point-in-time snapshot across the dump duration.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": [
+        "self-managed"
+      ],
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Always use mongodump --oplog when backing up a replica set for consistency",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.1",
+      "subcategory": "backup_recovery",
+      "legacy_name": "rpo_target",
+      "display_name": "RPO Target Defined",
+      "description": "A documented Recovery Point Objective. Without it, backup cadence and PITR retention have no benchmark to size against.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "rpo_5",
+          "rpo_15",
+          "rpo_60",
+          "rpo_240",
+          "rpo_1440",
+          "yes"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Define and document RPO target based on business requirements",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.2",
+      "subcategory": "backup_recovery",
+      "legacy_name": "rto_target",
+      "display_name": "RTO Target Defined",
+      "description": "A documented Recovery Time Objective. Without it, recovery procedures cannot be sized or rehearsed against a target.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "rto_5",
+          "rto_15",
+          "rto_60",
+          "rto_240",
+          "rto_480",
+          "rto_1440",
+          "yes"
+        ]
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Define and document RTO target based on business requirements",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.3",
+      "subcategory": "backup_recovery",
+      "legacy_name": "recovery_tested",
+      "display_name": "Restore Tested (90d)",
+      "description": "Recency of the last successful restore drill. Untested restores frequently fail under real DR pressure.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Schedule regular restore tests (at least quarterly)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-4.4",
+      "subcategory": "backup_recovery",
+      "legacy_name": "dr_plan_documented",
+      "display_name": "DR Plan Documented",
+      "description": "A written disaster-recovery plan covering replica-set failover. Without one, recovery depends on individual operator memory.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Document disaster recovery procedures including replica failover and data restore runbooks",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.1",
+      "subcategory": "backup_retention",
+      "legacy_name": "retention_policy",
+      "display_name": "Retention Policy Met",
+      "description": "Whether backup retention satisfies organizational or regulatory policy. Required to prove recoverability over the mandated horizon.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Configure backup retention to meet compliance requirements (PBM retention policy or Atlas snapshot retention)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.2",
+      "subcategory": "backup_retention",
+      "legacy_name": "oplog_retention_adequate",
+      "display_name": "Oplog Retention Adequate",
+      "description": "Whether oplog retention spans the gap between full backups. Required for PITR replay from the most recent restore point.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Ensure oplog retention period exceeds the time between backups to allow PITR",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-5.3",
+      "subcategory": "backup_retention",
+      "legacy_name": "offsite_backup",
+      "display_name": "Offsite / Cloud Backup Copy",
+      "description": "Existence of an offsite or cloud-object-storage backup copy. Required to survive site-level loss of the primary backup target.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure PBM to store backups in S3/GCS/Azure Blob or use Atlas Cloud Backup with multi-region",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.1",
+      "subcategory": "security_auth",
+      "legacy_name": "auth_enabled",
+      "display_name": "Authentication Enabled",
+      "description": "Whether server-side authentication (security.authorization) is on. Required to prevent unauthenticated access to all databases.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "enabled"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable authorization in mongod.conf: security.authorization: enabled",
+      "cis_reference": "CIS 3.1"
+    },
+    {
+      "metric_id": "SEC-1.2",
+      "subcategory": "security_auth",
+      "legacy_name": "scram_sha_256",
+      "display_name": "SCRAM-SHA-256 Mechanism",
+      "description": "Whether SCRAM-SHA-256 is the active authentication mechanism. Older mechanisms (MONGODB-CR, SCRAM-SHA-1) are weaker and deprecated.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Ensure SCRAM-SHA-256 is in setParameter.authenticationMechanisms; upgrade users from MONGODB-CR",
+      "cis_reference": "CIS 3.2"
+    },
+    {
+      "metric_id": "SEC-1.3",
+      "subcategory": "security_auth",
+      "legacy_name": "localhost_exception_disabled",
+      "display_name": "Localhost Exception Disabled",
+      "description": "Whether the localhost exception has been closed by creating an admin user. While open, anyone with shell access can create privileged users.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Create an admin user in the admin database to disable the localhost exception",
+      "cis_reference": "CIS 3.1"
+    },
+    {
+      "metric_id": "SEC-1.4",
+      "subcategory": "security_auth",
+      "legacy_name": "x509_or_ldap",
+      "display_name": "x.509 or LDAP Auth (Optional)",
+      "description": "Use of x.509 certificate auth or LDAP for service/infrastructure accounts. Centralizes credential lifecycle outside the database.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure x.509 certificate authentication or LDAP for service accounts",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.5",
+      "subcategory": "security_auth",
+      "legacy_name": "failed_auth_24h",
+      "display_name": "Low Failed Logins (24h)",
+      "description": "Volume of failed authentication attempts over the last 24 hours. Spikes can indicate brute-force activity or misconfigured clients.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 10
+      },
+      "sources": [
+        "sql",
+        "worker"
+      ],
+      "agent_only": true,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate failed login sources in mongod log; consider IP allowlisting",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.1",
+      "subcategory": "security_encrypt",
+      "legacy_name": "tls_mode",
+      "display_name": "TLS Enabled",
+      "description": "Whether TLS/SSL is enforced on all client and inter-node connections (net.tls.mode). Required to prevent plaintext credentials and data on the wire.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "requireTLS",
+          "preferTLS"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set net.tls.mode: requireTLS in mongod.conf and provide valid certificates",
+      "cis_reference": "CIS 3.6"
+    },
+    {
+      "metric_id": "SEC-2.2",
+      "subcategory": "security_encrypt",
+      "legacy_name": "tls_version",
+      "display_name": "TLS 1.2+ Required",
+      "description": "Minimum TLS protocol version negotiated. TLS 1.0/1.1 are deprecated and have known weaknesses.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "TLS1_2",
+          "TLS1_3"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set net.tls.disabledProtocols: TLS1_0,TLS1_1 in mongod.conf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.3",
+      "subcategory": "security_encrypt",
+      "legacy_name": "encryption_at_rest",
+      "display_name": "WiredTiger Encryption at Rest",
+      "description": "Whether data files are encrypted at rest via WiredTiger (Enterprise/KMIP) or disk-level encryption. Required to protect data on stolen or decommissioned media.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql",
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Enable WiredTiger encryption (Enterprise) with KMIP or use disk-level encryption (LUKS/AWS EBS)",
+      "cis_reference": "CIS 3.8"
+    },
+    {
+      "metric_id": "SEC-2.4",
+      "subcategory": "security_encrypt",
+      "legacy_name": "kmip_integration",
+      "display_name": "KMIP Key Management",
+      "description": "External KMIP key management for encryption-at-rest. Enables key rotation and centralizes key lifecycle outside the database host.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure KMIP server in mongod.conf under security.kmip for external key management",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-2.5",
+      "subcategory": "security_encrypt",
+      "legacy_name": "tls_cert_validity",
+      "display_name": "TLS Certificate Valid",
+      "description": "Days of validity remaining on the active TLS certificate. Expiry causes immediate connection failures across the cluster.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 30,
+        "unit": "days"
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Renew TLS certificate before expiration; configure certificate auto-rotation",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.1",
+      "subcategory": "security_audit",
+      "legacy_name": "audit_log_enabled",
+      "display_name": "Audit Log Enabled",
+      "description": "Whether the audit log is on (Enterprise auditLog or equivalent). Required for security forensics and compliance evidence.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable audit log in mongod.conf under auditLog section (Enterprise) or configure syslog destination",
+      "cis_reference": "CIS 3.5"
+    },
+    {
+      "metric_id": "SEC-3.2",
+      "subcategory": "security_audit",
+      "legacy_name": "audit_filter_configured",
+      "display_name": "Audit Filter Configured",
+      "description": "Whether the audit filter captures authentication, authorization, and DDL events. A blank filter records nothing useful for security review.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure auditLog.filter to capture authenticate, createCollection, dropCollection, and createUser actions",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.3",
+      "subcategory": "security_audit",
+      "legacy_name": "audit_authorization_success",
+      "display_name": "Authorization Success Audited",
+      "description": "Whether successful authorizations are also audited (auditAuthorizationSuccess). Required for full access traceability; has performance cost.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set auditAuthorizationSuccess: true in mongod.conf (note: performance impact on high-throughput systems)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.4",
+      "subcategory": "security_audit",
+      "legacy_name": "log_verbosity",
+      "display_name": "Log Verbosity Adequate",
+      "description": "Server log verbosity (systemLog.verbosity). Too low loses connection/operation events; too high inflates log volume in production.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 0,
+        "max": 2
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set systemLog.verbosity: 1 for adequate logging; avoid verbosity > 2 in production",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-3.5",
+      "subcategory": "security_audit",
+      "legacy_name": "log_retention_days",
+      "display_name": "Log Retention (90d)",
+      "description": "Days of mongod log history retained. Short retention prevents incident retrospectives and may breach compliance requirements.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 90,
+        "unit": "days"
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure log rotation and retention policy (logrotate or Atlas log export) to retain logs for compliance period",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-4.1",
+      "subcategory": "security_access",
+      "legacy_name": "rbac_configured",
+      "display_name": "RBAC Configured",
+      "description": "Use of least-privilege role-based access control. Avoids handing out root or __system to accounts that don't need it.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Review user roles via db.getUsers(); assign least-privilege built-in roles or custom roles",
+      "cis_reference": "CIS 3.3"
+    },
+    {
+      "metric_id": "SEC-4.2",
+      "subcategory": "security_access",
+      "legacy_name": "superuser_count",
+      "display_name": "Limited Root Users",
+      "description": "Count of accounts holding the root or __system role. Excess super-users widen the blast radius of credential compromise.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 3
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Reduce root-role users to minimum; use readWrite, dbAdmin, or custom roles for application accounts",
+      "cis_reference": "CIS 3.3"
+    },
+    {
+      "metric_id": "SEC-4.3",
+      "subcategory": "security_access",
+      "legacy_name": "custom_roles_review",
+      "display_name": "Custom Roles Reviewed",
+      "description": "Whether custom roles avoid overly broad privilege combinations. Unbounded custom roles can effectively grant root by accident.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Review custom roles with db.getRoles({showPrivileges: true}); remove unnecessary privileges",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-4.4",
+      "subcategory": "security_access",
+      "legacy_name": "network_binding",
+      "display_name": "Network Binding Restricted",
+      "description": "Whether mongod's network binding (net.bindIp) excludes 0.0.0.0 or pairs it with firewalling. Open binding exposes the database to every reachable network.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set net.bindIp in mongod.conf to specific interfaces; use firewall rules to restrict port 27017",
+      "cis_reference": "CIS 3.6"
+    },
+    {
+      "metric_id": "SEC-4.5",
+      "subcategory": "security_access",
+      "legacy_name": "ip_allowlist_atlas",
+      "display_name": "IP Allowlist Configured (Atlas)",
+      "description": "Whether the Atlas IP access list limits connections to known CIDRs. A 0.0.0.0/0 entry exposes the cluster to the public internet.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": [
+        "atlas"
+      ],
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Configure Atlas IP access list to specific CIDR ranges; avoid 0.0.0.0/0",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.1",
+      "subcategory": "capacity_storage",
+      "legacy_name": "wiredtiger_cache_used_pct",
+      "display_name": "WiredTiger Cache Usage",
+      "description": "Percentage of the WiredTiger cache currently in use. Sustained high usage drives eviction pressure and read latency.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 90,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase wiredTigerCacheSizeGB or add RAM; review working set size vs available memory",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.2",
+      "subcategory": "capacity_storage",
+      "legacy_name": "data_size_vs_storage",
+      "display_name": "Storage Utilization",
+      "description": "Ratio of data size to allocated disk capacity. Disks above 80% trend toward I/O slowdown and emergency cleanup work.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 80,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Expand storage, implement data archival, or enable sharding for horizontal scale-out",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.3",
+      "subcategory": "capacity_storage",
+      "legacy_name": "compression_ratio",
+      "display_name": "Compression Ratio",
+      "description": "Effective WiredTiger compression ratio (uncompressed vs on-disk). Low ratios suggest compression is misconfigured or disabled.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 1.5
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Ensure WiredTiger snappy/zstd compression is enabled; verify blockCompressor in storage.wiredTiger.collectionConfig",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.4",
+      "subcategory": "capacity_storage",
+      "legacy_name": "index_size_ratio",
+      "display_name": "Index Size Ratio",
+      "description": "Ratio of total index size to data size. Disproportionate indexes inflate memory pressure and write amplification.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 50,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Review and drop unused indexes; run db.collection.getIndexes() and analyze index usage stats",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.5",
+      "subcategory": "capacity_storage",
+      "legacy_name": "storage_engine",
+      "display_name": "WiredTiger Storage Engine",
+      "description": "Active storage engine. WiredTiger is the only supported engine on modern MongoDB; legacy engines (MMAPv1) lack required durability features.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "wiredTiger"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Migrate to WiredTiger storage engine; MMAPv1 is removed in MongoDB 4.0+",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.1",
+      "subcategory": "capacity_connections",
+      "legacy_name": "connection_usage_pct",
+      "display_name": "Connection Utilization",
+      "description": "Live connections as a share of maxIncomingConnections. Approaching the cap leads to connection refusals and tail-latency spikes.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 80,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase maxIncomingConnections or implement connection pooling via mongos/proxy",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.2",
+      "subcategory": "capacity_connections",
+      "legacy_name": "max_incoming_connections",
+      "display_name": "maxIncomingConnections Configured",
+      "description": "Whether net.maxIncomingConnections is set explicitly. The default can let MongoDB exhaust OS file descriptors under load.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set net.maxIncomingConnections in mongod.conf based on available OS file descriptors",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.3",
+      "subcategory": "capacity_connections",
+      "legacy_name": "connection_pool_configured",
+      "display_name": "Connection Pooling in Use",
+      "description": "Whether application drivers reuse pooled connections. Per-request connections cause socket exhaustion and TLS-handshake overhead.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Configure maxPoolSize/minPoolSize in the MongoDB driver connection string",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-2.4",
+      "subcategory": "capacity_connections",
+      "legacy_name": "connections_available",
+      "display_name": "Connections Available",
+      "description": "Headroom of unused connection slots. Near-zero availability puts the cluster one client surge away from refused connections.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 100
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase maxIncomingConnections or reduce application connection pool sizes",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.1",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "wiredtiger_eviction_rate",
+      "display_name": "WiredTiger Eviction Rate",
+      "description": "Rate of page evictions falling onto application threads. Sustained pressure indicates undersized cache or working set overflow.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 5,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase WiredTiger cache size or add memory; investigate large document scans causing eviction pressure",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.2",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "compact_needed",
+      "display_name": "No Fragmentation Alert",
+      "description": "Gap between dataSize and storageSize as a fragmentation proxy. Large gaps waste disk and may benefit from compact().",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 50,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Run db.collection.compact() during maintenance window to reclaim fragmented space",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.3",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "index_maintenance",
+      "display_name": "No Unused Indexes",
+      "description": "Count of indexes with zero accesses since restart. Unused indexes consume memory and slow down writes for no benefit.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Drop unused indexes identified via $indexStats aggregation pipeline; reduces memory and write overhead",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.4",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "ttl_indexes_active",
+      "display_name": "TTL Indexes Active",
+      "description": "Whether TTL background deletes are running on time-series collections. Stalled TTL lets data grow past retention windows.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Verify TTL index background thread is running; check serverStatus().metrics.ttl for deletedDocuments activity",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-3.5",
+      "subcategory": "capacity_maintenance",
+      "legacy_name": "dirty_cache_pct",
+      "display_name": "Dirty Cache Below Threshold",
+      "description": "Share of the WiredTiger cache holding dirty pages. Above ~20%, aggressive eviction kicks in and write latency rises.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 20,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase checkpoint frequency (storage.syncPeriodSecs) or add memory to reduce dirty page buildup",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.1",
+      "subcategory": "capacity_planning",
+      "legacy_name": "oplog_window_planning",
+      "display_name": "Oplog Window for Planning",
+      "description": "Whether the oplog window covers planned maintenance durations. Too short forces full resyncs after taking secondaries offline.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 48,
+        "unit": "hours"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Size oplog to cover at least 48h of write activity to handle planned maintenance",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.2",
+      "subcategory": "capacity_planning",
+      "legacy_name": "shard_balancing",
+      "display_name": "Shard Balancer Active",
+      "description": "Whether the chunk balancer is on and not paused. Without it, hot shards accumulate and even distribution drifts.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": [
+        "sharded"
+      ],
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Enable balancer: sh.startBalancer(); investigate if balancer was paused intentionally",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.3",
+      "subcategory": "capacity_planning",
+      "legacy_name": "chunk_distribution",
+      "display_name": "Chunk Distribution Balanced",
+      "description": "Evenness of chunk counts across shards. Persistent imbalance signals shard-key skew or paused balancing.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": [
+        "sharded"
+      ],
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Allow balancer to run; review shard key choice if chronic imbalance persists",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-4.4",
+      "subcategory": "capacity_planning",
+      "legacy_name": "storage_capacity_trend",
+      "display_name": "Storage Growth Monitored",
+      "description": "Tracking of storage growth and a documented capacity plan. Without trend data, expansion happens reactively under pressure.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Implement storage monitoring with Ops Manager, Atlas, or Prometheus mongodb_exporter",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.1",
+      "subcategory": "perf_cache",
+      "legacy_name": "cache_hit_ratio",
+      "display_name": "Cache Hit Ratio",
+      "description": "Percentage of reads served from the WiredTiger cache. Low hit ratios push reads to disk and inflate latency.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 95,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase wiredTigerCacheSizeGB; ensure working set fits in cache; review large collection scans",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.2",
+      "subcategory": "perf_cache",
+      "legacy_name": "page_eviction_application_threads",
+      "display_name": "No Application Thread Eviction",
+      "description": "Whether application threads are stalling to do page eviction. Any non-zero count means background eviction is falling behind.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase cache size or eviction worker threads (wiredTigerEngineRuntimeConfig: eviction=(threads_max=8))",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.3",
+      "subcategory": "perf_cache",
+      "legacy_name": "cache_size_configured",
+      "display_name": "Cache Size Configured",
+      "description": "Whether storage.wiredTiger.engineConfig.cacheSizeGB is set explicitly. The 50%-of-RAM default ignores co-tenants and workload shape.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Set storage.wiredTiger.engineConfig.cacheSizeGB explicitly in mongod.conf based on total RAM and workload",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.4",
+      "subcategory": "perf_cache",
+      "legacy_name": "read_tickets_available",
+      "display_name": "Read Tickets Available",
+      "description": "Headroom on WiredTiger read tickets. Exhaustion stalls reads until in-flight operations release tickets.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 10
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate slow queries consuming tickets; consider increasing wiredTigerConcurrentReadTransactions if hardware allows",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-1.5",
+      "subcategory": "perf_cache",
+      "legacy_name": "write_tickets_available",
+      "display_name": "Write Tickets Available",
+      "description": "Headroom on WiredTiger write tickets. Exhaustion stalls writes and produces queue spikes under sustained load.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 10
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate slow write operations; consider increasing wiredTigerConcurrentWriteTransactions",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.1",
+      "subcategory": "perf_queries",
+      "legacy_name": "profiler_slow_queries",
+      "display_name": "Slow Queries Profiled",
+      "description": "Whether the slow-query profiler is recording above slowms. Without it, expensive operations go unattributed and untunable.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set profiling level 1 with appropriate slowms: db.setProfilingLevel(1, {slowms: 100})",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.2",
+      "subcategory": "perf_queries",
+      "legacy_name": "slow_operations_count",
+      "display_name": "Slow Query Count (1h)",
+      "description": "Count of slow operations recorded in the last hour. Sustained high counts point to missing indexes or runaway queries.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 50
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Analyze slow query log (system.profile collection); add missing indexes or rewrite query plans",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.3",
+      "subcategory": "perf_queries",
+      "legacy_name": "collection_scans",
+      "display_name": "No Collection Scans",
+      "description": "Recent queries hitting COLLSCAN in their explain plan. Full scans bypass indexes and scale linearly with collection size.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Create indexes to support query access patterns; use explain() to identify COLLSCAN queries",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.4",
+      "subcategory": "perf_queries",
+      "legacy_name": "index_usage_ratio",
+      "display_name": "Index Hit Ratio",
+      "description": "Share of reads served by an index. Low ratios indicate query patterns without supporting indexes.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 95,
+        "unit": "percent"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Identify unindexed query patterns via profiler; create compound indexes for frequent query shapes",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.5",
+      "subcategory": "perf_queries",
+      "legacy_name": "query_targeting_ratio",
+      "display_name": "Query Targeting Efficient",
+      "description": "Ratio of scanned to returned documents on sharded queries. High ratios mean queries hit too many shards or scan too widely.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 10
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": [
+        "sharded"
+      ],
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Include shard key in queries to enable targeted operations; review shard key selection",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.6",
+      "subcategory": "perf_queries",
+      "legacy_name": "profiler_level",
+      "display_name": "Profiler Level Appropriate",
+      "description": "Profiler verbosity level. Level 2 logs every operation and degrades production write throughput; level 1 captures slow ops only.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          0,
+          1
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set profiler level to 1 (not 2); level 2 logs all operations causing significant overhead",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.7",
+      "subcategory": "perf_queries",
+      "legacy_name": "explain_plan_cached",
+      "display_name": "Query Plan Cache Populated",
+      "description": "Whether the query plan cache holds active entries. Empty caches force replanning and erase a key optimizer benefit.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Ensure indexes exist to allow plan caching; investigate plan cache evictions via planCacheListQueryShapes",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.1",
+      "subcategory": "perf_locks",
+      "legacy_name": "global_lock_queue_total",
+      "display_name": "Global Lock Queue Empty",
+      "description": "Length of the global read/write lock queue. Sustained queueing indicates lock contention or long-running operations.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 5
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate long-running operations via db.currentOp(); kill blocking operations if necessary",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.2",
+      "subcategory": "perf_locks",
+      "legacy_name": "active_operations",
+      "display_name": "No Long-Running Operations",
+      "description": "Count of currently active operations exceeding 30s runtime. Long ops often hold locks and starve other clients.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Use db.killOp(opId) for stuck operations; investigate root cause via explain() analysis",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.3",
+      "subcategory": "perf_locks",
+      "legacy_name": "ticket_wait_count",
+      "display_name": "No Ticket Wait Queue",
+      "description": "Count of operations waiting on WiredTiger tickets. Any wait indicates the engine is the bottleneck for concurrency.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Reduce concurrent operations or increase WiredTiger ticket counts; optimize slow queries",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-3.4",
+      "subcategory": "perf_locks",
+      "legacy_name": "network_in_latency",
+      "display_name": "Network Latency Acceptable",
+      "description": "Round-trip time between application and MongoDB. High latency caps end-to-end throughput regardless of database tuning.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 10,
+        "unit": "ms"
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Co-locate application and MongoDB in same region/AZ; use read preferences appropriately",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.1",
+      "subcategory": "perf_replication",
+      "legacy_name": "replication_lag",
+      "display_name": "Replication Lag Acceptable",
+      "description": "Replication lag of secondaries behind the primary. Excess lag risks stale reads and longer failover convergence.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 30,
+        "unit": "seconds"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate secondary lag via rs.printSecondaryReplicationInfo(); check secondary hardware and network",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.2",
+      "subcategory": "perf_replication",
+      "legacy_name": "oplog_window_vs_lag",
+      "display_name": "Oplog Window vs Lag",
+      "description": "Ratio of oplog window to current replication lag. Tight ratios mean a stalled secondary risks falling off the oplog.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Increase oplog size (replSetResizeOplog) to ensure replica can catch up after maintenance",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.3",
+      "subcategory": "perf_replication",
+      "legacy_name": "election_count",
+      "display_name": "Stable Primary (No Recent Elections)",
+      "description": "Count of primary elections in the last 24h. Recurring elections indicate network instability, OOM kills, or disk stalls.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "max": 0
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate election cause in mongod logs; check for network partitions, OOM kills, or disk I/O stalls",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-4.4",
+      "subcategory": "perf_replication",
+      "legacy_name": "all_members_healthy",
+      "display_name": "All Replica Set Members Healthy",
+      "description": "Replica-set member states. Members stuck in RECOVERING, DOWN, or STARTUP reduce quorum margin and HA guarantees.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Investigate unhealthy members via rs.status(); check for RECOVERING, DOWN, or STARTUP states",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-1.1",
+      "subcategory": "future_version",
+      "legacy_name": "db_version",
+      "display_name": "MongoDB Version Current",
+      "description": "Major.minor version against the supported GA window. Older lines (e.g. 6.0 EOL Jul 2025) drop out of security maintenance.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Upgrade to a supported MongoDB version; 5.0 EOL was October 2024, 4.4 EOL was February 2024",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-1.2",
+      "subcategory": "future_version",
+      "legacy_name": "mongodb_latest_patch",
+      "display_name": "Latest Patch Applied",
+      "description": "Whether the running build matches the latest patch for its major.minor line. Lagging patches accumulates known fixes and CVEs.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Apply latest patch via package manager; check https://www.mongodb.com/docs/manual/release-notes/",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-1.3",
+      "subcategory": "future_version",
+      "legacy_name": "feature_compatibility_version",
+      "display_name": "Feature Compatibility Version Current",
+      "description": "Alignment of featureCompatibilityVersion (FCV) with the running binary. Stale FCV blocks new features and complicates upgrades.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Run db.adminCommand({setFeatureCompatibilityVersion: '<version>'}) to align FCV with actual version",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-1.4",
+      "subcategory": "future_version",
+      "legacy_name": "version_eol_status",
+      "display_name": "Not End-of-Life",
+      "description": "Whether the running MongoDB version is still inside its support lifecycle. EOL versions receive no security patches.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          "supported"
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Upgrade immediately; EOL versions receive no security patches. Refer to MongoDB lifecycle policy.",
+      "cis_reference": null,
+      "gate_scope": "pillar"
+    },
+    {
+      "metric_id": "FP-1.5",
+      "subcategory": "future_version",
+      "legacy_name": "driver_compatibility",
+      "display_name": "Driver Compatibility",
+      "description": "Compatibility of application drivers with the server version. Outdated drivers can break on server upgrade or miss new wire features.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Check driver compatibility matrix at https://www.mongodb.com/docs/drivers/; upgrade drivers before server upgrade",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-2.1",
+      "subcategory": "future_config",
+      "legacy_name": "replica_set_enabled",
+      "display_name": "Replica Set Configured",
+      "description": "Whether MongoDB runs as a replica set rather than standalone. Required for HA, online backups, and rolling maintenance.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Convert standalone to replica set: initiate rs.initiate() and add secondary members",
+      "cis_reference": null,
+      "gate_scope": "pillar"
+    },
+    {
+      "metric_id": "FP-2.2",
+      "subcategory": "future_config",
+      "legacy_name": "replica_set_odd_members",
+      "display_name": "Odd Number of Voting Members",
+      "description": "Whether the replica set has an odd voter count. Even counts allow tied elections and degraded availability.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Add an arbiter or additional data-bearing member to achieve an odd number of voters",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-2.3",
+      "subcategory": "future_config",
+      "legacy_name": "mongos_health",
+      "display_name": "mongos Instances Healthy",
+      "description": "Reachability of mongos router instances. A failed mongos disconnects clients from the sharded cluster routing layer.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": [
+        "sharded"
+      ],
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "target_aware",
+      "remediation": "Restart failed mongos instances; investigate connectivity to config server replica set",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-3.1",
+      "subcategory": "future_planning",
+      "legacy_name": "upgrade_plan",
+      "display_name": "Upgrade Plan Documented",
+      "description": "Existence of a documented upgrade plan for the next major release. Without one, EOL deadlines arrive as emergencies.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Document upgrade path following MongoDB upgrade guide; plan FCV bump separately from binary upgrade",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-3.2",
+      "subcategory": "future_planning",
+      "legacy_name": "deprecated_operators",
+      "display_name": "No Deprecated Operators",
+      "description": "Use of deprecated MongoDB operators or commands in application code. Deprecated APIs can disappear in a future major release.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Review MongoDB release notes for deprecated operators; update queries to use current equivalents",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-3.3",
+      "subcategory": "future_planning",
+      "legacy_name": "schema_validation",
+      "display_name": "Schema Validation Configured",
+      "description": "Use of JSON Schema validators on collections. Without validation, malformed documents enter unchecked and harm downstream consumers.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Define JSON schema validators with db.runCommand({collMod: '<collection>', validator: {...}})",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-3.4",
+      "subcategory": "future_planning",
+      "legacy_name": "change_streams_usage",
+      "display_name": "Change Streams for Event-Driven",
+      "description": "Use of the Change Streams API for event-driven integration. Direct oplog tailing is brittle and bypasses resume tokens.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Migrate from direct oplog tailing to Change Streams API for better abstraction and resilience",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-3.5",
+      "subcategory": "future_planning",
+      "legacy_name": "atlas_migration_readiness",
+      "display_name": "Atlas Migration Readiness",
+      "description": "Whether a self-managed deployment has been assessed for Atlas migration. Surfaces blockers before a migration project commits.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": [
+        "self-managed"
+      ],
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Run MongoDB Atlas Assessment Tool (MAAT) to evaluate migration feasibility and effort",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-3.6",
+      "subcategory": "future_planning",
+      "legacy_name": "connection_string_dns_seedlist",
+      "display_name": "DNS Seedlist Connection String",
+      "description": "Use of mongodb+srv:// DNS seedlist URIs by clients. Hard-coded host lists prevent transparent topology changes.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Update connection strings to use mongodb+srv:// format to avoid hardcoded host lists",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-4.1",
+      "subcategory": "future_foundation",
+      "legacy_name": "monitoring_connected",
+      "display_name": "Monitoring Connected",
+      "description": "Whether MongoDB metrics flow into a monitoring backend (Atlas, Ops Manager, or Prometheus). Without it, incidents are detected by users.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Deploy Prometheus mongodb_exporter, Ops Manager agent, or enable Atlas monitoring integration",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-4.2",
+      "subcategory": "future_foundation",
+      "legacy_name": "alerting_configured",
+      "display_name": "Alerting Configured",
+      "description": "Whether alerts cover replication lag, disk usage, and connection count. Missing alerts let key failure modes go silent.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Configure alerts in Atlas, Ops Manager, or Prometheus Alertmanager for key MongoDB metrics",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-4.3",
+      "subcategory": "future_foundation",
+      "legacy_name": "profiler_level_production",
+      "display_name": "Profiler Level Safe for Production",
+      "description": "Profiler level chosen for production. Level 2 logs every operation and amplifies write cost; level 0/1 are safe defaults.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "enum",
+      "evaluation_config": {
+        "pass_values": [
+          0,
+          1
+        ]
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Disable level 2 profiling after debugging; profiling all ops causes significant write amplification",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FP-4.4",
+      "subcategory": "future_foundation",
+      "legacy_name": "ops_manager_agent",
+      "display_name": "Ops Manager / Cloud Manager Agent",
+      "description": "Presence of an Ops Manager or Cloud Manager agent. Provides centralized backup, monitoring, and automation for self-managed clusters.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "manual"
+      ],
+      "agent_only": false,
+      "deployment_profiles": [
+        "self-managed"
+      ],
+      "min_mongo_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Deploy Ops Manager or Cloud Manager agent for automated backup, monitoring, and deployment management",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.5b",
+      "subcategory": "backup_wal",
+      "legacy_name": "replica_set_members",
+      "display_name": "Replica Set Members",
+      "description": "Total number of replica-set members. At least 3 are needed for safe quorum-based failover; an odd count avoids tied elections.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 3
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Deploy at least 3 replica set members for quorum-based failover",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "SEC-1.5b",
+      "subcategory": "security_auth",
+      "legacy_name": "authentication_mechanisms",
+      "display_name": "Strong Auth Mechanisms",
+      "description": "Availability of SCRAM-SHA-256 in the server's authentication mechanisms. Older mechanisms are weaker and should be phased out.",
+      "criticality": "important",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable SCRAM-SHA-256: net.tls.mode: requireTLS in mongod.conf",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.5b",
+      "subcategory": "capacity_storage",
+      "legacy_name": "total_data_size_bytes",
+      "display_name": "Total Data Size",
+      "description": "Total logical data size across databases. Tracked as input to capacity planning and growth analysis.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Monitor data size growth for capacity planning",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.6",
+      "subcategory": "capacity_storage",
+      "legacy_name": "collection_count",
+      "display_name": "Collection Count",
+      "description": "Total collections across databases. Excessive proliferation can hint at multi-tenant or schema-per-tenant patterns.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Review collection proliferation for schema design issues",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "CAP-1.7",
+      "subcategory": "capacity_storage",
+      "legacy_name": "index_size_bytes",
+      "display_name": "Index Size Tracked",
+      "description": "Total bytes of index storage. Used to compare against data size and to flag oversized index footprints.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Review index sizes relative to data size; consider removing unused indexes",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.6b",
+      "subcategory": "perf_queries",
+      "legacy_name": "opcounters_insert",
+      "display_name": "Insert Throughput",
+      "description": "Insert operations per second. Tracked as a baseline for write-volume capacity planning.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Monitor insert throughput for capacity planning",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.7b",
+      "subcategory": "perf_queries",
+      "legacy_name": "opcounters_query",
+      "display_name": "Query Throughput",
+      "description": "Query operations per second. Tracked as a baseline for read-volume and performance trend analysis.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Monitor query throughput for performance baselining",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.8",
+      "subcategory": "perf_queries",
+      "legacy_name": "opcounters_update",
+      "display_name": "Update Throughput",
+      "description": "Update operations per second. Surfaces write-heavy workloads and write-amplification trends.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Monitor update throughput for write-heavy workloads",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.9",
+      "subcategory": "perf_queries",
+      "legacy_name": "opcounters_delete",
+      "display_name": "Delete Throughput",
+      "description": "Delete operations per second. Persistent high rates may indicate churn or schema-design issues.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Monitor delete throughput; high delete rate may indicate schema design issues",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "BAK-1.6",
+      "subcategory": "backup_wal",
+      "legacy_name": "journal_enabled",
+      "display_name": "Journaling Enabled",
+      "description": "Whether WiredTiger journaling is on. Required for durable crash recovery between checkpoints.",
+      "criticality": "critical",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Enable journaling (default in WiredTiger)",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.10",
+      "subcategory": "perf_queries",
+      "legacy_name": "write_throughput",
+      "display_name": "Write Throughput",
+      "description": "Combined insert + update operations per second. Aggregate measure of write-side capacity demand.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Monitor write throughput for capacity baselining",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.11",
+      "subcategory": "perf_queries",
+      "legacy_name": "read_throughput",
+      "display_name": "Read Throughput",
+      "description": "Combined query + getmore operations per second. Aggregate measure of read-side capacity demand.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "check": "not_empty_or_dummy"
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Monitor read throughput for performance baselining",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "PERF-2.12",
+      "subcategory": "perf_queries",
+      "legacy_name": "profiling_level",
+      "display_name": "Profiling Level",
+      "description": "Profiling level applied for slow-query capture. A non-zero level is needed to populate system.profile for tuning.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "threshold",
+      "evaluation_config": {
+        "min": 1
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "baseline",
+      "remediation": "Set profiling level to 1 (slow queries only): db.setProfilingLevel(1, { slowms: 100 })",
+      "cis_reference": null
+    },
+    {
+      "metric_id": "FUT-4.4",
+      "subcategory": "future_foundation",
+      "legacy_name": "schema_validation_used",
+      "display_name": "Schema Validation Used",
+      "description": "Whether any collection has a schema validator. Even partial coverage signals data-quality investment.",
+      "criticality": "advisory",
+      "weight": null,
+      "evaluation_type": "boolean",
+      "evaluation_config": {
+        "pass_value": true
+      },
+      "sources": [
+        "sql"
+      ],
+      "agent_only": false,
+      "deployment_profiles": null,
+      "min_version": null,
+      "extension_requirement": null,
+      "metric_tier": "environment_optional",
+      "remediation": "Add schema validation to key collections for data integrity",
+      "cis_reference": null
+    }
+  ],
+  "consistency_rules": [],
+  "technology": "mongodb",
+  "technology_version": "8"
+}

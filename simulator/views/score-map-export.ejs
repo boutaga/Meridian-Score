@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Score Map — <%= tech %><%= scenario ? ' (' + scenario + ')' : '' %></title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; background: #f5f6fa; }
+  header { background: #1a1a2e; color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 16px; }
+  header h1 { font-size: 1.1em; }
+  header .meta { color: #a0aec0; font-size: 0.85em; }
+  header button { margin-left: auto; padding: 6px 14px; border: 1px solid #4a5568; background: #2563eb; color: #fff; border-radius: 6px; cursor: pointer; font-size: 0.85em; }
+  #cy { width: 100vw; height: calc(100vh - 130px); background: #fff; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 8px 20px; background: #fff; border-top: 1px solid #e2e8f0; font-size: 0.78em; color: #475569; align-items: center; }
+  .legend .item { display: flex; align-items: center; gap: 5px; }
+  .sw { width: 16px; height: 10px; border-radius: 2px; display: inline-block; }
+  .nd { width: 14px; height: 14px; display: inline-block; border: 1px solid #334155; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Score Map — <%= tech.charAt(0).toUpperCase() + tech.slice(1) %></h1>
+  <span class="meta">catalog <%= meta.version %><%= scenario ? ' · scenario: ' + scenario : '' %> · metrics→rules→score · highlight = fired rules / failed metrics for this scenario</span>
+  <button id="png">Download PNG</button>
+</header>
+<div id="cy"></div>
+<div class="legend">
+  <span class="item"><span class="nd" style="background:#2563eb"></span> metric (fill=pillar, border=criticality)</span>
+  <span class="item"><span class="nd" style="background:#b91c1c;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)"></span> rule (fill=severity)</span>
+  <span class="item"><span class="sw" style="background:#7c3aed"></span> rule trigger</span>
+  <span class="item"><span class="sw" style="background:#b91c1c"></span> rule effect</span>
+  <span class="item"><span class="sw" style="background:#2563eb"></span> derived from</span>
+  <span class="item"><span class="sw" style="background:#94a3b8"></span> applies-when gate</span>
+  <span class="item"><span class="sw" style="background:#f59e0b"></span> fired (this scenario)</span>
+  <% meta.pillars.forEach(function(p) { %><span class="item"><span class="sw" style="background:<%= p.color %>"></span><%= p.name %></span><% }) %>
+</div>
+
+<script><%- dagreJs %></script>
+<script><%- cytoscapeJs %></script>
+<script><%- cytoscapeDagreJs %></script>
+<script><%- styleJs %></script>
+<script>
+  var graph = <%- JSON.stringify(graph).replace(/</g, '\\u003c') %>;
+  var result = <%- JSON.stringify(result).replace(/</g, '\\u003c') %>;
+  if (window.cytoscapeDagre) cytoscape.use(window.cytoscapeDagre);
+  var cy = cytoscape({
+    container: document.getElementById('cy'),
+    elements: { nodes: graph.nodes, edges: graph.edges },
+    style: window.SCORE_MAP_STYLE,
+    wheelSensitivity: 0.25,
+    minZoom: 0.1,
+    maxZoom: 3,
+  });
+  cy.layout(window.SCORE_MAP_LAYOUT).run();
+  window.scoreMapApplyHighlight(cy, window.scoreMapHighlightFromResult(result));
+  cy.on('tap', 'node', function (evt) {
+    var n = evt.target;
+    cy.elements().removeClass('faded');
+    cy.elements().addClass('faded');
+    n.closedNeighborhood().removeClass('faded');
+  });
+  cy.on('tap', function (evt) { if (evt.target === cy) cy.elements().removeClass('faded'); });
+  document.getElementById('png').addEventListener('click', function () {
+    var data = cy.png({ full: true, scale: 2, bg: '#ffffff' });
+    var a = document.createElement('a');
+    a.href = data; a.download = 'score-map-<%= tech %>.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+</script>
+</body>
+</html>

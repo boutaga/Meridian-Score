@@ -1,0 +1,70 @@
+{
+  "name": "@dbi-services/scoring-core",
+  "version": "1.17.0",
+  "description": "Universal database health scoring engine — 5-pillar, 100-point framework supporting PostgreSQL, MySQL, MariaDB, MongoDB, Oracle, and SQL Server",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./engine": "./src/scoring/engine.js",
+    "./evaluator": "./src/scoring/evaluator.js",
+    "./consistency": "./src/scoring/consistency.js",
+    "./policy": "./src/scoring/policy.js",
+    "./catalog": "./src/catalog/index.js",
+    "./constants": "./src/catalog/constants.js",
+    "./validation": "./src/catalog/validation.js",
+    "./policies": "./src/policies/defaults.js",
+    "./fingerprint": "./src/fingerprint.js",
+    "./bundle": "./src/bundle.js"
+  },
+  "bin": {
+    "scoring-rules-bundle": "scripts/rules-bundle.js"
+  },
+  "files": [
+    "src/",
+    "scripts/rules-bundle.js",
+    "data/metrics/",
+    "data/samples/",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "test:coverage": "c8 node --test test/*.test.js",
+    "generate-docs": "node scripts/generate-docs.js",
+    "generate-samples": "node scripts/generate-samples.js",
+    "generate-scoring-spec": "node scripts/generate-scoring-spec.js --no-links",
+    "generate-scoring-spec:internal": "node scripts/generate-scoring-spec.js",
+    "validate-catalogs": "node scripts/validate-catalogs.js",
+    "benchmark": "node scripts/benchmark-catalog.js",
+    "simulator": "cd simulator && npm start",
+    "simulator:docker": "cd simulator && docker compose up --build",
+    "check-payload": "node scripts/check-payload.js",
+    "extract-anchors": "node scripts/extract-anchors-from-checker.js"
+  },
+  "keywords": [
+    "database",
+    "health",
+    "scoring",
+    "postgresql",
+    "mysql",
+    "oracle",
+    "mongodb",
+    "sqlserver",
+    "mariadb",
+    "assessment",
+    "monitoring"
+  ],
+  "author": "dbi services",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boutaga/Meridian-Score.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "c8": "^8.0.0",
+    "exceljs": "^4.4.0"
+  }
+}
