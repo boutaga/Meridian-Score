@@ -29,3 +29,6 @@ desktop.ini
 # Logs
 *.log
 npm-debug.log*
+
+# Agent working files hold customer and person names: never committed (2026-11-24)
+ .claude/ DECISIONS.md LESSONS.md REGRESSIONS.md
